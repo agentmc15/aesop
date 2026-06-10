@@ -1,0 +1,10 @@
+# Schedule the orchestrator with cron (infra time, not your attention).
+# Runs every 5 minutes; logs to a file you can tail from your phone.
+#
+# crontab -e, then add:
+#
+# */5 * * * * cd /path/to/your/repo && /usr/bin/python3 loops/orchestration/orchestrator.py \
+#   --state loops/orchestration/state.json >> /tmp/orchestrator.log 2>&1
+#
+# Claude Code: prefer `/loop` or Routines (or a GitHub Action) so it keeps running after you close
+# the laptop. Codex: use the Automations tab (results land in a Triage inbox).

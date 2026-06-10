@@ -1,0 +1,16 @@
+# The canonical starter loop, as a spec. The one-line intent you actually write:
+#   /loop babysit all my PRs. Auto-fix build issues, and when comments come in, use a
+#   worktree agent to fix them.
+loop:
+  trigger:   cron("*/5 * * * *")          # infra time — runs with the laptop closed
+  sources:   [github.pulls, github.comments, slack]
+  per_item:                                # one isolated worktree each
+    - agent.fix: [build_errors, review_comments]
+    - verify:    [lint, build, test]       # MUST self-verify end to end
+    - review_agent.scan: diff              # roborev-style 2nd pass (maker != checker)
+    - on_pass:   [push, reply_to_comment]
+  guardrails:                              # the three hard stops — every one is a HALT condition
+    max_iterations:   30
+    no_progress_stop: 3
+    budget_usd:       50
+  state: git("state.json")                 # crash-recoverable; conforms to state.schema.json

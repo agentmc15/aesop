@@ -1,0 +1,34 @@
+# accuracy-max — correctness over cost. High-stakes work (migrations, security, anything where a
+# wrong answer is expensive). Spend tokens freely; the $ ceiling is the only thing that stays tight.
+profile: accuracy-max
+
+reasoning:
+  effort: xhigh            # high / xhigh
+  model_tier: strong       # strongest available model + thinking
+
+retrieval:
+  strategy: corrective     # escalate: corrective + decomposition + graph when relevant
+  decomposition: true
+  graph: true
+  rerank: true
+  top_k: 12
+
+verification:
+  self_check: true
+  verify_subagent: true    # run build/test/lint via a separate agent
+  reviewer_subagent: true  # independent reviewer, STRONG model (maker != checker)
+  llm_judge: true          # judge final output against a rubric (different model family)
+  security_review: true    # on sensitive paths
+
+orchestration:
+  multi_agent: true        # critic state-machine allowed
+  subagents: liberal
+  worktrees: true
+
+context:
+  compaction: summarize    # keep everything reachable; don't lose evidence
+
+guardrails:                # the three hard stops — generous iteration, but $ ceiling STAYS ON
+  max_iterations: 80
+  no_progress_stop: 4
+  budget_usd: 100.0

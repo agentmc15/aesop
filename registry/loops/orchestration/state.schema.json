@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Orchestration durable state",
+  "description": "What survives a restart. Lives in git so a crash resumes from the last checkpoint.",
+  "type": "object",
+  "required": ["run_id", "iteration", "usd_spent", "halt_reason"],
+  "properties": {
+    "run_id": { "type": "string" },
+    "iteration": { "type": "integer", "minimum": 0 },
+    "usd_spent": { "type": "number", "minimum": 0 },
+    "halt_reason": { "type": ["string", "null"],
+      "enum": [null, "complete", "no-progress", "budget-ceiling", "max-iterations", "permission-denied"] },
+    "prs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": { "type": "string",
+            "enum": ["fixing_build", "awaiting_review", "done"] },
+          "attempts": { "type": "integer", "minimum": 0 },
+          "worktree": { "type": "string" }
+        }
+      }
+    }
+  }
+}

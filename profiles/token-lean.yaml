@@ -1,0 +1,35 @@
+# token-lean — cheap and fast. Token-poor, quick iteration, or simple tasks. The RIGHT DEFAULT to
+# start from: prescriptive best practices assume an unlimited budget you probably don't have. Turn
+# the dial up only where accuracy actually pays.
+profile: token-lean
+
+reasoning:
+  effort: medium           # medium / fast
+  model_tier: cheap        # cheaper/faster model
+
+retrieval:
+  strategy: router         # router only, or fixed top-k; no redundant retrieval
+  decomposition: false
+  graph: false
+  rerank: false
+  top_k: 5
+
+verification:
+  self_check: true         # inline self-check only
+  verify_subagent: false   # no second model to pay for
+  reviewer_subagent: false
+  llm_judge: false
+  security_review: false   # (still: never weaken safety rules — this only drops the extra pass)
+
+orchestration:
+  multi_agent: false
+  subagents: false
+  worktrees: true          # worktrees are cheap and prevent collisions — keep them on
+
+context:
+  compaction: truncate     # aggressive truncation of tool outputs
+
+guardrails:                # tight iteration + small $ cap
+  max_iterations: 20
+  no_progress_stop: 2
+  budget_usd: 5.0

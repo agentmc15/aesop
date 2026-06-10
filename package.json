@@ -1,0 +1,23 @@
+{
+  "name": "aesop",
+  "version": "0.0.1",
+  "description": "Environment compiler for AI coding agents — one manifest, every harness (Claude Code, Codex, Copilot, Cursor, Antigravity, VS Code), your pathway.",
+  "type": "module",
+  "bin": { "aesop": "dist/index.js" },
+  "main": "dist/index.js",
+  "files": ["dist", "registry", "profiles", "schemas"],
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/**/*.test.js",
+    "lint": "tsc --noEmit",
+    "dev": "tsx src/index.ts"
+  },
+  "engines": { "node": ">=20" },
+  "license": "MIT",
+  "keywords": ["ai", "agents", "claude-code", "codex", "copilot", "cursor", "mcp", "agents-md", "harness", "loop-engineering"],
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.6.0",
+    "tsx": "^4.19.0"
+  }
+}

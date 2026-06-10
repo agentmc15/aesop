@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 /**
  * aesop — environment compiler for AI coding agents.
- * Phase 0 skeleton: command routing locked; implementations land per docs/08-roadmap.md.
- * Library-first: the compiler is an API; this CLI and `aesop mcp serve` are thin shells.
+ * Library-first: commands live in src/commands/ and throw AesopError; only this shell exits.
  */
+import { parseArgs } from "node:util";
+import { AesopError } from "./manifest.js";
+import { runInit, initSummary } from "./commands/init.js";
 
 const COMMANDS: Record<string, { phase: number; summary: string }> = {
-  init: { phase: 1, summary: "detect project → interview → write aesop.yaml → first compile" },
+  init: { phase: 1, summary: "detect project → interview → write aesop.yaml (--yes, --force, --harness a,b, --pathway p)" },
   compile: { phase: 2, summary: "manifest → native files for every selected harness (--check for CI)" },
   sync: { phase: 4, summary: "detect drift in fenced regions; --write-back lifts edits into the manifest" },
   doctor: { phase: 4, summary: "audit the environment: verify loop, MCP health, stops, secrets, budgets" },
@@ -37,18 +39,59 @@ function help(): string {
   ].join("\n");
 }
 
-const [cmd] = process.argv.slice(2);
-if (!cmd || cmd === "--help" || cmd === "-h" || cmd === "help") {
-  console.log(help());
-  process.exit(0);
+async function main(): Promise<number> {
+  const { values, positionals } = parseArgs({
+    args: process.argv.slice(2),
+    options: {
+      yes: { type: "boolean", short: "y" },
+      force: { type: "boolean" },
+      json: { type: "boolean" },
+      help: { type: "boolean", short: "h" },
+      harness: { type: "string" },
+      pathway: { type: "string" },
+      cwd: { type: "string" },
+    },
+    allowPositionals: true,
+  });
+
+  const cmd = positionals[0];
+  if (!cmd || values.help || cmd === "help") {
+    console.log(help());
+    return 0;
+  }
+
+  const known = COMMANDS[cmd];
+  if (!known) {
+    console.error(`aesop: unknown command '${cmd}'\n\n${help()}`);
+    return 1;
+  }
+
+  switch (cmd) {
+    case "init": {
+      const result = await runInit({
+        cwd: values.cwd ?? process.cwd(),
+        ...(values.yes ? { yes: true } : {}),
+        ...(values.force ? { force: true } : {}),
+        ...(values.json ? { json: true } : {}),
+        ...(values.harness ? { harness: values.harness } : {}),
+        ...(values.pathway ? { pathway: values.pathway } : {}),
+      });
+      console.log(values.json ? JSON.stringify({ path: result.path, manifest: result.manifest }, null, 2) : initSummary(result));
+      return 0;
+    }
+    default:
+      console.error(`aesop ${cmd}: not yet implemented (lands in Phase ${known.phase} — docs/08-roadmap.md).`);
+      return 1;
+  }
 }
-const known = COMMANDS[cmd];
-if (!known) {
-  console.error(`aesop: unknown command '${cmd}'\n\n${help()}`);
-  process.exit(1);
-}
-// IMPLEMENT (Phase ${known.phase}): see docs/06-cli-spec.md#aesop-${cmd} and docs/08-roadmap.md.
-console.error(
-  `aesop ${cmd}: not yet implemented (lands in Phase ${known.phase} — docs/08-roadmap.md).`
-);
-process.exit(1);
+
+main()
+  .then((code) => process.exit(code))
+  .catch((e: unknown) => {
+    if (e instanceof AesopError) {
+      console.error(`aesop: ${e.message}`);
+      process.exit(e.exitCode);
+    }
+    console.error(e);
+    process.exit(1);
+  });

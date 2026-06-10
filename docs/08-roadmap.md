@@ -9,13 +9,17 @@ Plan, docs, research notes, registry seeds, profiles, schema draft, CLI skeleton
 interfaces (`src/types.ts`).
 **Done when:** docs complete; seeds in place; `Emitter`/`Manifest` interfaces compile.
 
-## Phase 1 — Manifest + detect
+## Phase 1 — Manifest + detect *(done 2026-06-10)*
 Finalize `aesop.schema.json` (lock it). Implement `init`: detection (lockfiles → stack; package
 scripts/Makefile/CI → commands; workspaces → monorepo; existing agent files → import) +
 interview + manifest writer.
 **Goal:** *`aesop init` on 5 real repos (node, python, go, rust, monorepo) produces a
 schema-valid manifest with ≥80% of fields auto-detected; existing CLAUDE.md/AGENTS.md content is
 imported, not lost.*
+**Result:** schema locked (v1); `src/{detect,interview,manifest,commands/init}.ts`; 5 fixtures in
+`fixtures/init/`; 11 tests green — goal-line tests encode the criterion verbatim (detection
+24/24 aimed fields; imports preserved; same-family judge and stop-less goal recipes rejected).
+Runtime deps justified: `yaml` (manifest fidelity), `ajv` (the schema IS the contract).
 
 ## Phase 2 — Compiler + first two emitters
 Resolve/lock pipeline, profile application, fence writer, and the **claude-code** and **codex**

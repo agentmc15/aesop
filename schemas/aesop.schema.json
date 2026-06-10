@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://aesop.dev/schemas/aesop.schema.json",
   "title": "Aesop manifest (aesop.yaml)",
-  "description": "Single source of truth for an agentic environment. DRAFT — locked at Phase 1.",
+  "description": "Single source of truth for an agentic environment. v1 — LOCKED at Phase 1 (2026-06-10). Changes from here are breaking changes: flag and stop for approval.",
   "type": "object",
   "required": ["version", "project", "harnesses", "pathway", "primitives"],
   "additionalProperties": false,

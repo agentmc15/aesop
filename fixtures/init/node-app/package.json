@@ -1,0 +1,6 @@
+{
+  "name": "fixture-node-app",
+  "engines": { "node": ">=20" },
+  "scripts": { "build": "tsc", "test": "vitest run", "lint": "eslint ." },
+  "devDependencies": { "typescript": "^5.6.0" }
+}

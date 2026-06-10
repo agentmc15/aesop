@@ -1,0 +1,14 @@
+# Canonical hook spec — emitters translate per harness (Phase 2).
+# Claude Code → PreToolUse(Bash) returning deny; elsewhere → wrapper script.
+name: block-dangerous-commands
+description: Deny obviously destructive shell commands regardless of what the model decides.
+event: pre-tool
+matcher: "Bash"
+# Deny if the command matches any pattern. Exit nonzero from the action = blocked.
+deny_patterns:
+  - "rm -rf /"
+  - "rm -rf ~"
+  - "git push --force origin (main|master)"
+  - "git reset --hard origin"
+  - "DROP (TABLE|DATABASE)"
+  - "--dangerously-skip-permissions"

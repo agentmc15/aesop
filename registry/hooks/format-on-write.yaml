@@ -1,0 +1,9 @@
+# Canonical hook spec — emitters translate event names per harness (Phase 2):
+# Claude Code → PostToolUse(Write|Edit); harnesses without hooks → git pre-commit fallback.
+name: format-on-write
+description: Run the project formatter on every file the agent writes or edits. Hard policy, not a prompt.
+event: post-tool
+matcher: "Write|Edit"
+# ${file} is the path the tool touched; format command resolves from project.commands
+# (format > lint --fix) at compile time.
+action: "{format_command} ${file}"

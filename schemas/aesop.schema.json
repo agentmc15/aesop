@@ -62,7 +62,7 @@
     },
     "registries": {
       "type": "array",
-      "items": { "type": "string", "pattern": "^(builtin|github:[\\w.-]+/[\\w.-]+|https?://.+)$" },
+      "items": { "type": "string", "pattern": "^(builtin|github:[\\w.-]+/[\\w.-]+|path:.+|https?://.+)$" },
       "default": ["builtin"]
     },
     "primitives": {

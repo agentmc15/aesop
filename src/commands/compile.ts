@@ -10,7 +10,7 @@ import { cursorEmitter } from "../emitters/cursor.js";
 import { vscodeEmitter } from "../emitters/vscode.js";
 import { AesopError, parseManifest } from "../manifest.js";
 import { applyProfile, loadProfile } from "../profile.js";
-import { resolveBuiltin, sha256 } from "../registry.js";
+import { resolvePrimitive, sha256 } from "../registry.js";
 import { mergeWithExisting, renderAgentsMd, wrapInlineFence } from "../render.js";
 import type {
   CompileContext,
@@ -69,11 +69,11 @@ export async function computeOutputs(opts: CompileOptions): Promise<ComputedOutp
 
   const templateRef = (manifest.primitives.instructions?.template ?? "builtin:AGENTS.template").replace(/^builtin:/, "");
   const primitives: ResolvedPrimitive[] = [
-    resolveBuiltin("instructions", templateRef),
-    ...prunedAgents.map((ref) => resolveBuiltin("agent", ref)),
-    ...(manifest.primitives.skills ?? []).map((ref) => resolveBuiltin("skill", ref)),
-    ...(manifest.primitives.commands ?? []).map((ref) => resolveBuiltin("command", ref)),
-    ...(manifest.primitives.hooks ?? []).map((ref) => resolveBuiltin("hook", ref)),
+    resolvePrimitive("instructions", templateRef, opts.cwd),
+    ...prunedAgents.map((ref) => resolvePrimitive("agent", ref, opts.cwd)),
+    ...(manifest.primitives.skills ?? []).map((ref) => resolvePrimitive("skill", ref, opts.cwd)),
+    ...(manifest.primitives.commands ?? []).map((ref) => resolvePrimitive("command", ref, opts.cwd)),
+    ...(manifest.primitives.hooks ?? []).map((ref) => resolvePrimitive("hook", ref, opts.cwd)),
   ];
 
   const effectiveManifest = { ...manifest, primitives: { ...manifest.primitives, agents: prunedAgents } };

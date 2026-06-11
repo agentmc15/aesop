@@ -14,6 +14,8 @@ import { runSync, syncSummary } from "./commands/sync.js";
 import { runDoctor, doctorSummary } from "./commands/doctor.js";
 import { runLessons } from "./commands/lessons.js";
 import { runEject } from "./commands/eject.js";
+import { runAdd, runRemove, runList } from "./commands/add.js";
+import { runUpdate, updateSummary } from "./commands/update.js";
 import { listProfiles } from "./profile.js";
 
 const COMMANDS: Record<string, { phase: number; summary: string }> = {
@@ -63,6 +65,9 @@ async function main(): Promise<number> {
       fix: { type: "boolean" },
       matrix: { type: "boolean" },
       promote: { type: "boolean" },
+      apply: { type: "boolean" },
+      available: { type: "boolean" },
+      from: { type: "string" },
       harness: { type: "string" },
       pathway: { type: "string" },
       cwd: { type: "string" },
@@ -123,6 +128,44 @@ async function main(): Promise<number> {
       });
       console.log(values.json ? JSON.stringify(result, null, 2) : doctorSummary(result));
       return result.findings.length ? 3 : 0;
+    }
+    case "add": {
+      const [, type, name] = positionals;
+      if (!type || !name) {
+        console.error("usage: aesop add <skill|agent|command|instructions> <name> [--from <registry>]");
+        return 1;
+      }
+      const result = await runAdd({ cwd: values.cwd ?? process.cwd(), type, name, ...(values.from ? { from: values.from } : {}) });
+      console.log(values.json ? JSON.stringify(result, null, 2) : `added ${type} '${name}' from ${result.registry}; recompiled.`);
+      return 0;
+    }
+    case "remove": {
+      const [, type, name] = positionals;
+      if (!type || !name) {
+        console.error("usage: aesop remove <skill|agent|command|instructions> <name>");
+        return 1;
+      }
+      const result = await runRemove({ cwd: values.cwd ?? process.cwd(), type, name });
+      console.log(
+        values.json
+          ? JSON.stringify(result, null, 2)
+          : `removed ${type} '${name}'; recompiled.${result.deleted.length ? `\ndeleted orphans:\n${result.deleted.map((d) => `  ✗ ${d}`).join("\n")}` : ""}`
+      );
+      return 0;
+    }
+    case "list": {
+      const lines = await runList({
+        cwd: values.cwd ?? process.cwd(),
+        ...(positionals[1] ? { type: positionals[1] } : {}),
+        ...(values.available ? { available: true } : {}),
+      });
+      console.log(values.json ? JSON.stringify(lines, null, 2) : lines.length ? lines.map((l) => `  ${l}`).join("\n") : "  (none)");
+      return 0;
+    }
+    case "update": {
+      const result = await runUpdate({ cwd: values.cwd ?? process.cwd(), ...(values.apply ? { apply: true } : {}) });
+      console.log(values.json ? JSON.stringify(result, null, 2) : updateSummary(result));
+      return 0;
     }
     case "lessons": {
       const result = await runLessons({

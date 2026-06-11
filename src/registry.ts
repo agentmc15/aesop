@@ -42,10 +42,31 @@ export const refSource = (ref: PrimitiveRef | AgentRef): string => {
   return ref.from ?? "builtin";
 };
 
+/** Resolve a primitive from builtin or from the project's vendored registries (.aesop/vendor/,
+ *  written by `aesop add`). Vendored content is already canonical — federation normalizes on
+ *  import, not on every compile. */
+export function resolvePrimitive(type: PrimitiveType, ref: PrimitiveRef | AgentRef, cwd: string): ResolvedPrimitive {
+  const source = refSource(ref);
+  if (source === "builtin") return resolveBuiltin(type, ref);
+
+  const name = refName(ref).split("@")[0]!;
+  const typeDir = { skill: "skills", agent: "agents", command: "commands", instructions: "instructions" }[
+    type as "skill" | "agent" | "command" | "instructions"
+  ];
+  if (!typeDir) throw new AesopError(2, `primitive type '${type}' is not registry-resolved`);
+  const base = join(cwd, ".aesop", "vendor", source, typeDir);
+  const path = type === "skill" ? join(base, name) : join(base, `${name}.md`);
+  if (!existsSync(path)) {
+    throw new AesopError(2, `${type} '${name}' from registry '${source}' is not vendored — run \`aesop add ${type} ${name} --from ${source}\``);
+  }
+  const files = type === "skill" ? readDirRecursive(path) : { [`${name}.md`]: readFileSync(path, "utf8") };
+  return { type, name, registry: source, sha: hashFiles(files), files };
+}
+
 export function resolveBuiltin(type: PrimitiveType, ref: PrimitiveRef | AgentRef): ResolvedPrimitive {
   const source = refSource(ref);
   if (source !== "builtin") {
-    throw new AesopError(2, `registry '${source}' for ${type} '${refName(ref)}': federation lands in Phase 5; only 'builtin' resolves today`);
+    throw new AesopError(2, `registry '${source}' for ${type} '${refName(ref)}' requires vendoring — use resolvePrimitive`);
   }
   const name = refName(ref).split("@")[0]!;
   let files: Record<string, string>;

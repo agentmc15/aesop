@@ -61,12 +61,20 @@ binary-resolution for now, honest in the finding), `--fix` creates the state dir
 `--matrix` prints live capabilities; `aesop lessons [--promote]` and `aesop eject --force`
 shipped (both were Phase-4 table entries). 27 tests green; doctor/sync exit 3 on findings.
 
-## Phase 5 — Registry federation
+## Phase 5 — Registry federation *(done 2026-06-10)*
 Importers normalizing awesome-copilot (`.instructions.md`/`.prompt.md`/agents/skills) and ecc
 (agents/skills/rules/hooks) into canonical schemas; SHA pinning; `update` with reviewable diffs.
 **Goal:** *`aesop add agent code-reviewer --from ecc` and `aesop add instructions react --from
 awesome-copilot` each emit valid native files on all 6 harnesses; `update` shows a correct diff
 when upstream moves.*
+**Result:** providers (builtin / `github:` cloned into gitignored `.aesop/cache/` / `path:` for
+org-local checkouts — FLAGGED additive schema widening, all old manifests stay valid); per-file
+importers (Claude-format agents → canonical tiers/tools, `applyTo` → path scope, rules → blocks,
+ecc domain-nested skills found via wildcard lookup); imported content is **vendored** into
+tracked `.aesop/vendor/<registry>/` (reviewable, SHA-pinned via `.meta.json`, offline compiles);
+instruction imports become provenance-marked manifest blocks so `update --apply` can replace
+them. `add` / `remove` (with orphan deletion) / `list --available` / `update` all live. 32 tests
+green.
 
 ## Phase 6 — Loops + goals
 Goal-recipe validation (three stops + runnable verify), `/goal` emission for Claude Code + Codex,

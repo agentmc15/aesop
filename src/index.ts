@@ -16,6 +16,7 @@ import { runLessons } from "./commands/lessons.js";
 import { runEject } from "./commands/eject.js";
 import { runAdd, runRemove, runList } from "./commands/add.js";
 import { runUpdate, updateSummary } from "./commands/update.js";
+import { goalList, goalNew, goalRun, goalRunSummary, goalShow } from "./commands/goal.js";
 import { listProfiles } from "./profile.js";
 
 const COMMANDS: Record<string, { phase: number; summary: string }> = {
@@ -68,6 +69,12 @@ async function main(): Promise<number> {
       apply: { type: "boolean" },
       available: { type: "boolean" },
       from: { type: "string" },
+      goal: { type: "string" },
+      verify: { type: "string" },
+      agent: { type: "string" },
+      "max-iterations": { type: "string" },
+      "no-progress-after": { type: "string" },
+      "budget-usd": { type: "string" },
       harness: { type: "string" },
       pathway: { type: "string" },
       cwd: { type: "string" },
@@ -128,6 +135,44 @@ async function main(): Promise<number> {
       });
       console.log(values.json ? JSON.stringify(result, null, 2) : doctorSummary(result));
       return result.findings.length ? 3 : 0;
+    }
+    case "goal": {
+      const cwd = values.cwd ?? process.cwd();
+      const [, sub, name] = positionals;
+      if (sub === "list" || !sub) {
+        const lines = await goalList(cwd);
+        console.log(values.json ? JSON.stringify(lines, null, 2) : lines.length ? lines.map((l) => `  ${l}`).join("\n") : "  (no goal recipes — aesop goal new <name> --goal \"…\" --verify \"…\")");
+        return 0;
+      }
+      if (sub === "show" && name) {
+        console.log(await goalShow(cwd, name));
+        return 0;
+      }
+      if (sub === "new" && name) {
+        const recipe = await goalNew({
+          cwd,
+          name,
+          goal: values.goal ?? "",
+          verify: values.verify ?? "",
+          ...(values["max-iterations"] ? { maxIterations: Number(values["max-iterations"]) } : {}),
+          ...(values["no-progress-after"] ? { noProgressAfter: Number(values["no-progress-after"]) } : {}),
+          ...(values["budget-usd"] ? { budgetUsd: Number(values["budget-usd"]) } : {}),
+        });
+        console.log(values.json ? JSON.stringify(recipe, null, 2) : `recipe '${name}' added and compiled — \`aesop goal show ${name}\` for the /goal text, \`aesop goal run ${name}\` for the portable loop.`);
+        return 0;
+      }
+      if (sub === "run" && name) {
+        const result = await goalRun({
+          cwd,
+          name,
+          ...(values.agent ? { agent: values.agent } : {}),
+          onTick: (s) => console.error(`  tick ${s.iteration}: ${s.verified ? "VERIFIED" : "not yet"} (≈$${s.costUsd.toFixed(2)})`),
+        });
+        console.log(values.json ? JSON.stringify(result, null, 2) : goalRunSummary(result, name));
+        return result.status === "verified" ? 0 : 3;
+      }
+      console.error("usage: aesop goal [list | show <name> | new <name> --goal … --verify … | run <name> [--agent <cmd>]]");
+      return 1;
     }
     case "add": {
       const [, type, name] = positionals;

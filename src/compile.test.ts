@@ -31,7 +31,9 @@ test("GOAL LINE: compile output matches golden fixtures byte-for-byte", async ()
     const dir = await compileFixture(name);
     const expectedRoot = join(fixturePath(name), "expected");
     const expectedFiles = await walk(expectedRoot);
-    const actualFiles = (await walk(dir)).filter((f) => f !== "aesop.yaml" && !f.startsWith(".aesop/"));
+    const actualFiles = (await walk(dir)).filter(
+      (f) => f !== "aesop.yaml" && f !== ".aesop/lock.json" && !f.startsWith(".aesop/cache/")
+    );
     assert.deepEqual(actualFiles, expectedFiles, `${name}: emitted file set differs from golden`);
     for (const f of expectedFiles) {
       const expected = await readFile(join(expectedRoot, f), "utf8");

@@ -11,7 +11,14 @@ import { vscodeEmitter } from "../emitters/vscode.js";
 import { AesopError, parseManifest } from "../manifest.js";
 import { applyProfile, loadProfile } from "../profile.js";
 import { resolvePrimitive, sha256 } from "../registry.js";
-import { mergeWithExisting, renderAgentsMd, wrapInlineFence } from "../render.js";
+import {
+  mergeWithExisting,
+  renderAgentsMd,
+  renderGoalDoc,
+  renderOrchestrationDoc,
+  renderRalphConfig,
+  wrapInlineFence,
+} from "../render.js";
 import type {
   CompileContext,
   EmittedFile,
@@ -83,6 +90,17 @@ export async function computeOutputs(opts: CompileOptions): Promise<ComputedOutp
   const emitted: EmittedFile[] = [
     { path: "AGENTS.md", content: wrapInlineFence(renderAgentsMd(ctx)), fence: "inline" },
   ];
+  // Goal recipes + orchestration are harness-neutral: the doc carries the native /goal text,
+  // the ralph.json drives `aesop goal run` on harnesses without one.
+  for (const recipe of manifest.primitives.loops ?? []) {
+    emitted.push(
+      { path: `.aesop/goals/${recipe.name}.md`, content: renderGoalDoc(recipe, manifest), fence: "sidecar" },
+      { path: `.aesop/goals/${recipe.name}.ralph.json`, content: renderRalphConfig(recipe, manifest), fence: "sidecar" }
+    );
+  }
+  if (manifest.primitives.loops?.length) {
+    emitted.push({ path: ".aesop/orchestration.md", content: renderOrchestrationDoc(manifest), fence: "sidecar" });
+  }
   const harnessFilter = opts.harness?.split(",").map((h) => h.trim());
   for (const harness of manifest.harnesses) {
     if (harnessFilter && !harnessFilter.includes(harness)) continue;

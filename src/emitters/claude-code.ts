@@ -2,7 +2,23 @@
  *  Target formats: docs/03-harness-matrix.md (update the doc first, then this file). */
 import { parseAgent, parseHook, refName } from "../registry.js";
 import { wrapInlineFence } from "../render.js";
-import type { CapabilityMatrix, CompileContext, EmittedFile, Emitter, Manifest } from "../types.js";
+import type { CapabilityMatrix, CompileContext, EmittedFile, Emitter, GoalRecipe, Manifest } from "../types.js";
+
+export function goalCommand(recipe: GoalRecipe): string {
+  return [
+    "---",
+    `description: Pursue the '${recipe.name}' goal until its verify command passes (recipe in .aesop/goals/${recipe.name}.md).`,
+    "---",
+    "",
+    `Work toward: ${recipe.goal}`,
+    "",
+    `Done means \`${recipe.verify}\` exits 0 — run it yourself after every increment; never claim`,
+    `done without it. ${recipe.plan_gate === false ? "" : "Plan first and confirm the plan before executing. "}Respect the hard`,
+    `stops: ${recipe.stops.max_iterations} iterations, halt after ${recipe.stops.no_progress_after} turns without measurable progress, $${recipe.stops.budget_usd} budget.`,
+    `Track progress in tasks/todo.md. Prefer native \`/goal\` for unattended runs.`,
+    "",
+  ].join("\n");
+}
 
 const TOOL_MAP: Record<string, string> = {
   read: "Read",
@@ -107,6 +123,15 @@ export const claudeCodeEmitter: Emitter = {
       for (const [rel, content] of Object.entries(resolved.files)) {
         files.push({ path: `.claude/skills/${resolved.name}/${rel}`, content, fence: "sidecar" });
       }
+    }
+
+    // Pairs with native /goal: a slash command carrying the recipe (goal, verify, stops).
+    for (const recipe of ctx.manifest.primitives.loops ?? []) {
+      files.push({
+        path: `.claude/commands/goal-${recipe.name}.md`,
+        content: goalCommand(recipe),
+        fence: "sidecar",
+      });
     }
 
     files.push({ path: ".claude/settings.json", content: settingsJson(ctx), fence: "sidecar" });

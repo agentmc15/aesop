@@ -1,0 +1,13 @@
+{
+  "name": "green-tests",
+  "goal": "all workspace tests pass",
+  "verify": "pnpm test",
+  "prompt": "Work toward this goal: all workspace tests pass\n\nThe success criterion is mechanical: `pnpm test` exits 0. Nothing else counts as done.\n\nEach session: read tasks/todo.md and tasks/lessons.md first, then make the SMALLEST\nverifiable increment toward the goal, run `pnpm test` yourself, and update\ntasks/todo.md with what you did and what remains. Surgical changes only; follow AGENTS.md.\nIf you discover a rule the hard way, append it to tasks/lessons.md.\n\nYou have no memory of previous sessions — the tasks/ files are your memory. Trust them.",
+  "stops": {
+    "max_iterations": 40,
+    "no_progress_after": 3,
+    "budget_usd": 25
+  },
+  "est_cost_per_iteration_usd": 0.25,
+  "agent_command": "claude -p \"$AESOP_PROMPT\" --output-format json"
+}

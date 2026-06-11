@@ -73,7 +73,7 @@ export const cursorEmitter: Emitter = {
         command: "no native prompt registry — portable prompts in .aesop/prompts/",
         hook: "no native hooks — git pre-commit wrapper lands in Phase 6",
         permissions: "allowlist lives in app settings, not a repo file — not emitted",
-        loop: "no first-party /goal — portable Ralph runner lands in Phase 6",
+        loop: "no first-party /goal — use the portable Ralph runner: `aesop goal run <name>` (.aesop/goals/)",
       },
       goalMode: "ralph",
     };

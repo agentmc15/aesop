@@ -1,6 +1,6 @@
-/** Shared rendering: the canonical AGENTS.md, and fence handling for managed files. */
+/** Shared rendering: the canonical AGENTS.md, goal recipes, and fence handling for managed files. */
 import { sha256 } from "./registry.js";
-import type { CompileContext, Manifest, Profile } from "./types.js";
+import type { CompileContext, GoalRecipe, Manifest, Profile } from "./types.js";
 
 // --- Fences ---
 
@@ -86,4 +86,112 @@ export function renderAgentsMd(ctx: CompileContext, opts?: { excludePathBlocks?:
   const projectSection = `## Project\n\n${renderProjectBlock(ctx.manifest, ctx.profile)}`;
   const prefix = sections.length ? sections.join("\n\n") + "\n\n" : "";
   return body.replace(/## Project\n\n\{\{PROJECT_BLOCK\}\}\n?/, prefix + projectSection + "\n");
+}
+
+// --- Goal recipes (the loops primitive) ---
+
+/** The fixed Ralph prompt: re-fed verbatim every tick; context resets to anchor files. */
+export function ralphPrompt(recipe: GoalRecipe, manifest: Manifest): string {
+  const state = manifest.state?.dir ?? "tasks/";
+  return [
+    `Work toward this goal: ${recipe.goal}`,
+    ``,
+    `The success criterion is mechanical: \`${recipe.verify}\` exits 0. Nothing else counts as done.`,
+    ``,
+    `Each session: read ${state}todo.md and ${state}lessons.md first, then make the SMALLEST`,
+    `verifiable increment toward the goal, run \`${recipe.verify}\` yourself, and update`,
+    `${state}todo.md with what you did and what remains. Surgical changes only; follow AGENTS.md.`,
+    `If you discover a rule the hard way, append it to ${state}lessons.md.`,
+    ``,
+    `You have no memory of previous sessions — the ${state} files are your memory. Trust them.`,
+  ].join("\n");
+}
+
+export function renderRalphConfig(recipe: GoalRecipe, manifest: Manifest): string {
+  return (
+    JSON.stringify(
+      {
+        name: recipe.name,
+        goal: recipe.goal,
+        verify: recipe.verify,
+        prompt: ralphPrompt(recipe, manifest),
+        stops: recipe.stops,
+        est_cost_per_iteration_usd: 0.25,
+        agent_command: 'claude -p "$AESOP_PROMPT" --output-format json',
+      },
+      null,
+      2
+    ) + "\n"
+  );
+}
+
+const goalInvocation = (recipe: GoalRecipe): string =>
+  `/goal ${recipe.goal} — verified when \`${recipe.verify}\` exits 0. ` +
+  `Stop after ${recipe.stops.max_iterations} iterations, ${recipe.stops.no_progress_after} no-progress turns, or $${recipe.stops.budget_usd}.`;
+
+export function renderGoalDoc(recipe: GoalRecipe, manifest: Manifest): string {
+  return [
+    `# Goal: ${recipe.name}`,
+    ``,
+    `- **Goal:** ${recipe.goal}`,
+    `- **Verify (the stopping condition):** \`${recipe.verify}\` — exits 0 ⇒ done. "Done" is a claim; this is the proof.`,
+    `- **Plan gate:** ${recipe.plan_gate === false ? "off" : "on — agree on a plan before execution"}`,
+    `- **Hard stops:** ${recipe.stops.max_iterations} iterations · ${recipe.stops.no_progress_after} no-progress · $${recipe.stops.budget_usd}`,
+    ``,
+    `## Native /goal (Claude Code ≥2.1.139, Codex CLI)`,
+    ``,
+    `Paste:`,
+    ``,
+    "```",
+    goalInvocation(recipe),
+    "```",
+    ``,
+    `## Portable Ralph runner (any harness)`,
+    ``,
+    "```bash",
+    `aesop goal run ${recipe.name}            # default agent: claude -p`,
+    `aesop goal run ${recipe.name} --agent '<any agent CLI reading $AESOP_PROMPT>'`,
+    "```",
+    ``,
+    `Fresh agent each tick, fixed prompt, verify after every tick, all three stops enforced.`,
+    `Progress is measured through the verify command's output — make \`${recipe.verify}\` print a`,
+    `progress signal (test counts, error counts) so the no-progress detector can see movement.`,
+    ``,
+    `## Schedule it (discovery loops)`,
+    ``,
+    "```cron",
+    `0 7 * * 1-5  cd $(pwd) && aesop goal run ${recipe.name} --json >> .aesop/goals/${recipe.name}.runs.jsonl`,
+    "```",
+    ``,
+  ].join("\n");
+}
+
+/** The mayor/worker pattern with the project's review bandwidth baked in. */
+export function renderOrchestrationDoc(manifest: Manifest): string {
+  const n = manifest.project.review_bandwidth ?? 2;
+  return [
+    `# Orchestration — parallel agents without collisions`,
+    ``,
+    `**max_parallel = ${n}** (your stated review bandwidth, from aesop.yaml). Worktrees make`,
+    `parallelism technically free; your capacity to review is the real ceiling. Raise`,
+    `\`project.review_bandwidth\` only when you can actually read what ships.`,
+    ``,
+    `## Worktree per agent (non-negotiable for parallelism)`,
+    ``,
+    "```bash",
+    ...Array.from({ length: n }, (_, i) => `git worktree add ../$(basename $(pwd))-agent-${i + 1} -b agent-${i + 1}`),
+    "```",
+    ``,
+    `One agent per worktree, one task per agent. The mechanical collisions go away; review`,
+    `bandwidth doesn't.`,
+    ``,
+    `## Mayor / workers`,
+    ``,
+    `1. The mayor (you, or a scheduled triage loop) maintains the work list in \`${manifest.state?.dir ?? "tasks/"}todo.md\`.`,
+    `2. Each worker runs one goal recipe in its own worktree (\`aesop goal run <name>\` or native /goal).`,
+    `3. Pair every maker with a checker: the reviewer subagent (or a second session) reviews the`,
+    `   diff before merge — the author is too lenient grading its own homework.`,
+    `4. State lives in git + \`${manifest.state?.dir ?? "tasks/"}\`: a crashed loop resumes from disk, not from memory.`,
+    ``,
+  ].join("\n");
 }

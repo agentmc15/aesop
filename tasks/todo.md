@@ -1,25 +1,25 @@
-# Phase 5 — registry federation ✅ (2026-06-10)
+# Phase 6 — loops + goals ✅ (2026-06-10)
 
-Goal: add agent from ecc + add instructions from awesome-copilot emit valid native files on all
-6 harnesses; update shows a correct diff when upstream moves.
+Goal: one recipe to verified completion via native /goal AND via the Ralph runner; all three
+stops halt correctly when forced.
 
 ## Done
-- [x] FLAGGED additive schema widening: registries pattern gains `path:<dir>` (offline tests +
-      org-local checkouts; every previously valid manifest stays valid; version stays 1)
-- [x] src/federation.ts — providers (builtin / github→.aesop/cache / path), name derivation,
-      per-file importers (Claude-format agents → canonical, applyTo → path scope, rules →
-      blocks, wildcard lookup for ecc skills/<domain>/<name>)
-- [x] Vendoring: .aesop/vendor/<registry>/ tracked in git, SHA-pinned via .meta.json; compile
-      resolves non-builtin refs from vendor (offline compiles guaranteed)
-- [x] add / remove (orphan files deleted via lock before/after) / list [--available] / update
-      (changed-line preview; --apply rewrites vendor + provenance-marked manifest blocks +
-      recompiles)
-- [x] fixtures/registries/{ecc,awesome-copilot}; 5 federation tests; 32 total green
-- [x] CLI smoke: add → list → update diff verified live
+- [x] render.ts: goal doc (+/goal paste text + cron), ralph.json, fixed Ralph prompt (anchored
+      to tasks/), orchestration.md (max_parallel = review_bandwidth)
+- [x] compile core emits goal + orchestration files; claude-code/codex emit goal-<name>
+      command/prompt wrappers
+- [x] src/loops/ralph.ts — fresh agent per tick, verify-first short-circuit, cost from trailing
+      JSON (claude -p) or estimate, per-tick state file, three hard stops
+- [x] aesop goal list | show | new (profile-default stops) | run [--agent] (exit 0/3)
+- [x] Ralph half of goal line: verified completion + iteration/no-progress/budget all forced
+      and halting correctly (4 E2E tests); native half at emission level (live /goal run →
+      Phase 7 dogfood, needs interactive session + spend)
+- [x] Goldens regenerated (59 files; .aesop/ outputs now golden-tracked except lock/cache)
+- [x] 40 tests green; CLI smoke: new → run (verified in 3 ticks) → re-run (0 ticks, $0)
 
 ## Review
-- Builtin adds skip vendoring (plain name refs); only foreign content is vendored.
-- update never auto-applies; instructions blocks are replaced only when the provenance marker
-  matches — hand-edited blocks without the marker are never touched.
+- Progress detection rides the verify command's output hash — recipes should print a progress
+  signal in verify (documented in each emitted recipe doc).
+- goalCommand wrapper lives in claude-code emitter; codex imports it (same text both sides).
 
-# Next: Phase 6 — loops + goals (goal recipes → /goal, Ralph runner, orchestration)
+# Next: Phase 7 — bundle + MCP serve + npm publish + dogfood (aesop manages its own repo)

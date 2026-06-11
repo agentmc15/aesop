@@ -49,7 +49,7 @@ export const vscodeEmitter: Emitter = {
         command: "via the 'copilot' harness (.github/prompts/)",
         hook: "no native hooks — git pre-commit wrapper lands in Phase 6",
         permissions: "Copilot policy is per-user/org — not emitted",
-        loop: "no first-party /goal — portable Ralph runner lands in Phase 6",
+        loop: "no first-party /goal — use the portable Ralph runner: `aesop goal run <name>` (.aesop/goals/)",
       },
       goalMode: "ralph",
     };

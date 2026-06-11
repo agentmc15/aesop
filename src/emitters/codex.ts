@@ -1,6 +1,7 @@
 /** Codex CLI emitter — .codex/{config.toml,agents/*.toml,prompts,skills}. AGENTS.md is emitted
  *  by the compiler core (Codex reads it natively).
  *  Target formats: docs/03-harness-matrix.md (update the doc first, then this file). */
+import { goalCommand } from "./claude-code.js";
 import { parseAgent, refName } from "../registry.js";
 import type { CapabilityMatrix, CompileContext, EmittedFile, Emitter, Manifest } from "../types.js";
 
@@ -58,6 +59,10 @@ export const codexEmitter: Emitter = {
         content: Object.values(resolved.files)[0]!,
         fence: "sidecar",
       });
+    }
+
+    for (const recipe of ctx.manifest.primitives.loops ?? []) {
+      files.push({ path: `.codex/prompts/goal-${recipe.name}.md`, content: goalCommand(recipe), fence: "sidecar" });
     }
 
     for (const resolved of ctx.primitives.filter((p) => p.type === "skill")) {

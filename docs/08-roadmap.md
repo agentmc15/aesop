@@ -76,13 +76,24 @@ instruction imports become provenance-marked manifest blocks so `update --apply`
 them. `add` / `remove` (with orphan deletion) / `list --available` / `update` all live. 32 tests
 green.
 
-## Phase 6 — Loops + goals
+## Phase 6 — Loops + goals *(done 2026-06-10)*
 Goal-recipe validation (three stops + runnable verify), `/goal` emission for Claude Code + Codex,
 the portable Ralph runner, orchestration templates (worktree-per-agent, `max_parallel` =
 `review_bandwidth`), scheduled-automation emission (Routines/cron).
 **Goal:** *one recipe runs to verified completion twice: via native `/goal` on Claude Code AND
 via the Ralph runner on a harness without `/goal`; both halt correctly on each of the three stops
 when forced.*
+**Result:** compile emits per recipe `.aesop/goals/<name>.md` (paste-ready `/goal` text + cron
+example), `<name>.ralph.json`, `.claude/commands/goal-<name>.md`, `.codex/prompts/goal-<name>.md`,
+and `.aesop/orchestration.md` (max_parallel = review_bandwidth). `aesop goal list|show|new|run`
+live; the Ralph runner does fresh-agent-per-tick with a fixed prompt anchored to tasks/, verify
+after every tick, cost parsed from `claude -p --output-format json` (or estimated), durable
+per-tick state on disk. **Ralph half of the goal line fully verified**: runs to completion (stub
+agent) and each of the three stops halts correctly when forced (4 E2E tests). **Native half
+verified at emission level** (invocation text + wrappers asserted); a live `/goal` run needs
+interactive Claude Code + token spend → exercised in Phase 7 dogfooding. Progress detection is
+through the verify lens: identical verify output N consecutive ticks ⇒ no-progress halt
+(documented in every recipe doc). 40 tests green.
 
 ## Phase 7 — Bundle + MCP + ship
 `bundle` (claude-plugin, copilot-plugin, tarball), `aesop mcp serve`, npm publish as `aesop`

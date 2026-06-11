@@ -32,13 +32,19 @@ once by the core (CLAUDE.md = `@AGENTS.md`); 3 golden fixtures byte-compared; --
 verified at CLI level; token-lean pruning + outside-fence preservation + one-off `--pathway`
 override all tested. 17 tests green. `aesop profile list|show` shipped early.
 
-## Phase 3 — Four more emitters
+## Phase 3 — Four more emitters *(done 2026-06-10)*
 **copilot** (copilot-instructions.md + path-scoped `.instructions.md` + `.prompt.md` +
 `.github/agents/`), **cursor** (`.mdc` rules with globs/alwaysApply), **antigravity**
-(AGENTS.md + GEMINI.md + GUARDRAILS.md), **vscode**. Capability matrix tests: every fallback
-explicit.
+(AGENTS.md + GUARDRAILS.md), **vscode**. Capability matrix tests: every fallback explicit.
 **Goal:** *same golden-fixture gate per harness; `capabilities()` output matches
 docs/03-harness-matrix.md cell-for-cell.*
+**Result:** all six emitters live; full fixture compiles 47 files across all harnesses,
+golden-gated. Copilot gets native `applyTo` path scoping (excluded from its main file to avoid
+duplication); Cursor gets `globs` rules + skills-as-rules + a slim alwaysApply pointer to
+AGENTS.md; Antigravity gets generated GUARDRAILS.md (no GEMINI.md — AGENTS.md wins precedence);
+VS Code gets settings wiring + verify-loop tasks.json. Fallbacks are shared-byte files in
+`.aesop/{roles,prompts}/`. The matrix doc gained a "Capabilities summary" table that
+`capabilities.test.ts` asserts cell-for-cell. 19 tests green.
 
 ## Phase 4 — Sync + doctor
 Lockfile hashing, drift detection, `--write-back` (instruction edits auto-lift; structural edits

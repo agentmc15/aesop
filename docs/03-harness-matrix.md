@@ -28,10 +28,11 @@ in context; body loads on trigger; bundled files load on demand.
 | Harness | Location | Notes |
 |---|---|---|
 | Claude Code | `.claude/skills/<name>/SKILL.md` | implicit trigger by description; also `/skill` |
-| Codex | skills dir per config | same format |
-| Copilot | `.github/skills/` (awesome-copilot category: "self-contained folders with instructions and bundled assets") | |
-| Antigravity | skills supported natively | |
-| Cursor / VS Code | no native skills → emit as rules (`.mdc` with `description` trigger) / instructions + prompt files | LCD fallback, flagged in matrix tests |
+| Codex | `.codex/skills/<name>/SKILL.md` | same format |
+| Copilot | `.github/skills/<name>/` (awesome-copilot category: "self-contained folders with instructions and bundled assets") | |
+| Antigravity | native support, but the on-disk location varies by version — **fallback**: referenced from AGENTS.md until pinned here | |
+| Cursor | no native skills → emitted as agent-requested rules (`.cursor/rules/skill-<name>.mdc`, `description` trigger) | fallback, flagged in capabilities |
+| VS Code | via the `copilot` harness | |
 
 **The description is the API.** A tight, boring description beats a clever one — implicit
 invocation matches on it.
@@ -43,7 +44,7 @@ invocation matches on it.
 | Claude Code | `.claude/agents/<name>.md` — YAML frontmatter: `name`, `description`, `tools`, `model` | yes |
 | Codex | `.codex/agents/<name>.toml` | yes |
 | Copilot | `.github/agents/<name>.md` (awesome-copilot "agents" category; MCP-integrated) | partial |
-| Cursor / Antigravity / VS Code | no first-class subagents → emit role prompt files + orchestration docs | fallback |
+| Cursor / Antigravity / VS Code | no first-class subagents → role prompt files in `.aesop/roles/<name>.md` (one session/tab per role; identical bytes across emitters) | fallback |
 
 Canonical roles in [`../registry/agents/`](../registry/agents/): explorer, implementer, critic,
 researcher, code-simplifier, spec-reviewer, security-reviewer, verify-app. The load-bearing pair
@@ -55,8 +56,9 @@ is **maker vs checker** — reviewer pinned to a stronger model at higher effort
 |---|---|
 | Claude Code | `.claude/commands/<name>.md` (slash command; `$ARGUMENTS`) |
 | Copilot | `.github/prompts/<name>.prompt.md` |
-| Codex | custom prompts dir |
-| Cursor / others | prompt files + docs (no native slash registry) |
+| Codex | `.codex/prompts/<name>.md` |
+| Cursor / Antigravity | portable prompt files in `.aesop/prompts/<name>.md` (no native slash registry) — fallback |
+| VS Code | via the `copilot` harness |
 
 Seed commands: `commit-pr` (Boris's most-used), `fix-ci`, `techdebt`, `add-learning`.
 
@@ -67,10 +69,10 @@ All harnesses speak MCP; only config location differs.
 | Harness | Config |
 |---|---|
 | Claude Code | `.mcp.json` (project) / `claude mcp add` (user) |
-| VS Code / Copilot | `.vscode/mcp.json` |
-| Cursor | `.cursor/mcp.json` |
-| Codex | `~/.codex/config.toml` `[mcp_servers]` |
-| Antigravity | MCP config in app settings |
+| VS Code / Copilot | `.vscode/mcp.json` (`servers` key) |
+| Cursor | `.cursor/mcp.json` (`mcpServers` key) |
+| Codex | `.codex/config.toml` `[mcp_servers]` |
+| Antigravity | app settings, not a repo file — **not emitted** (fallback, flagged in capabilities) |
 
 One canonical server spec (transport, command/url, env-var *names* only — never values) emits to
 all. Secrets never enter emitted files; Aesop references env vars and `doctor` checks they're set.
@@ -80,9 +82,9 @@ all. Secrets never enter emitted files; Aesop references env vars and `doctor` c
 | Harness | Mechanism |
 |---|---|
 | Claude Code | `settings.json` hooks: `PreToolUse`, `PostToolUse`, `Stop`, `Notification`, `SessionStart` — deterministic shell |
-| Copilot | hooks (awesome-copilot category: "automated actions triggered during agent sessions") |
-| Cursor | hooks support (per ecc adapter) |
-| Codex / others | fallback: git pre-commit + wrapper scripts |
+| Copilot | hooks exist (awesome-copilot category) but the repo-file format isn't pinned here yet — **fallback** until it is |
+| Cursor | hooks support exists (per ecc adapter) but unpinned — **fallback** |
+| Codex / others | fallback: git pre-commit + wrapper scripts (emitted in Phase 6) |
 
 Standard hook set: format-on-write (PostToolUse), dangerous-command block (PreToolUse),
 notify-on-stop. **Hooks are for hard policy** — LLM compliance is probabilistic; hooks are
@@ -119,6 +121,24 @@ fields — a recipe without them fails schema validation.
 Identical everywhere: `tasks/todo.md` (plan + checkboxes), `tasks/lessons.md` (mistake→rule),
 project notes dir. The agent forgets between runs; the repo doesn't. No translation needed — this
 is the one primitive that's pure convention.
+
+## Capabilities summary (tested cell-for-cell)
+
+`src/capabilities.test.ts` asserts every emitter's `capabilities()` against this table. A change
+to either side without the other fails CI — the doc and the code cannot drift apart silently.
+
+| Harness | Native | Fallback | Goal mode |
+|---|---|---|---|
+| claude-code | instructions, skill, agent, command, mcp, hook, permissions, loop, state | — | native |
+| codex | instructions, skill, agent, command, mcp, permissions, loop, state | hook | native |
+| copilot | instructions, skill, agent, command, mcp, state | hook, permissions, loop | ralph |
+| cursor | instructions, mcp, state | skill, agent, command, hook, permissions, loop | ralph |
+| antigravity | instructions, state, loop | skill, agent, command, mcp, hook, permissions | scheduled |
+| vscode | mcp, state | instructions, skill, agent, command, hook, permissions, loop | ralph |
+
+Notes pinned in Phase 3: Antigravity gets no `GEMINI.md` (it reads the core-emitted `AGENTS.md`,
+which wins precedence); Copilot is the one harness with native path-scoped instructions
+(`applyTo`), so its `copilot-instructions.md` excludes path blocks that `AGENTS.md` keeps inline.
 
 ## Verification protocol for this doc
 

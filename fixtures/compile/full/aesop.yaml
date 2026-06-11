@@ -26,6 +26,10 @@ project:
 harnesses:
   - claude-code
   - codex
+  - copilot
+  - cursor
+  - antigravity
+  - vscode
 pathway:
   profile: accuracy-max
 registries:

@@ -1,0 +1,8 @@
+---
+description: Project ground rules (compiled by aesop — edit aesop.yaml, not this file)
+alwaysApply: true
+---
+
+Follow AGENTS.md at the repo root — it is the canonical instruction file.
+Verify loop: `pnpm test` · lint: `pnpm lint`. Run it before claiming done.
+Durable notes live in `tasks/` (todo.md, lessons.md) — read at session start.

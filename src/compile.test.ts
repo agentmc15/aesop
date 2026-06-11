@@ -58,6 +58,24 @@ test("GOAL LINE: compile --check exits clean (0) after compile, drift (3) after 
   await rm(dir, { recursive: true, force: true });
 });
 
+test("native path scoping: copilot applyTo and cursor globs carry the path block", async () => {
+  const dir = await compileFixture("full");
+  const copilot = await readFile(join(dir, ".github/instructions/packages-web.instructions.md"), "utf8");
+  assert.ok(copilot.startsWith('---\napplyTo: "packages/web/**"\n---'), "applyTo frontmatter missing");
+  assert.ok(copilot.includes("React function components only"));
+  const cursor = await readFile(join(dir, ".cursor/rules/scoped-packages-web.mdc"), "utf8");
+  assert.ok(cursor.includes("globs: packages/web/**"), "globs frontmatter missing");
+  // Copilot's own instruction file omits the path block (native scoping), AGENTS.md keeps it inline.
+  const copilotMain = await readFile(join(dir, ".github/copilot-instructions.md"), "utf8");
+  assert.ok(!copilotMain.includes("React function components"), "path block duplicated in copilot-instructions.md");
+  const agents = await readFile(join(dir, "AGENTS.md"), "utf8");
+  assert.ok(agents.includes("React function components"), "path block missing from AGENTS.md");
+  // Fallbacks are shared bytes: roles + portable prompts exist once for cursor AND antigravity.
+  const role = await readFile(join(dir, ".aesop/roles/explorer.md"), "utf8");
+  assert.ok(role.includes("READ-ONLY"));
+  await rm(dir, { recursive: true, force: true });
+});
+
 test("pathway pruning: token-lean drops verify-app and critic, keeps explorer", async () => {
   const dir = await compileFixture("token-lean");
   const agentFiles = await readdir(join(dir, ".codex", "agents"));

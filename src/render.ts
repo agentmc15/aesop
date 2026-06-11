@@ -63,7 +63,7 @@ export function renderProjectBlock(manifest: Manifest, profile: Profile): string
   return lines.join("\n");
 }
 
-export function renderAgentsMd(ctx: CompileContext): string {
+export function renderAgentsMd(ctx: CompileContext, opts?: { excludePathBlocks?: boolean }): string {
   const template = ctx.primitives.find((p) => p.type === "instructions");
   if (!template) throw new Error("instructions template missing from resolved primitives");
   const body = Object.values(template.files)[0]!;
@@ -74,7 +74,8 @@ export function renderAgentsMd(ctx: CompileContext): string {
   if (projectBlocks.length) {
     sections.push(projectBlocks.map((b) => b.content.trimEnd()).join("\n\n"), "---");
   }
-  const pathBlocks = blocks.filter((b) => b.scope.startsWith("path:"));
+  // Excluded when the harness expresses path scoping natively (Copilot applyTo, Cursor globs).
+  const pathBlocks = opts?.excludePathBlocks ? [] : blocks.filter((b) => b.scope.startsWith("path:"));
   if (pathBlocks.length) {
     const scoped = pathBlocks
       .map((b) => `### \`${b.scope.slice("path:".length)}\`\n\n${b.content.trimEnd()}`)

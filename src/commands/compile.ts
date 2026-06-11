@@ -1,17 +1,25 @@
 /** `aesop compile` — manifest → native files. Pure render; all I/O lives here. */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import { antigravityEmitter } from "../emitters/antigravity.js";
 import { claudeCodeEmitter } from "../emitters/claude-code.js";
 import { codexEmitter } from "../emitters/codex.js";
+import { copilotEmitter } from "../emitters/copilot.js";
+import { cursorEmitter } from "../emitters/cursor.js";
+import { vscodeEmitter } from "../emitters/vscode.js";
 import { AesopError, parseManifest } from "../manifest.js";
 import { applyProfile, loadProfile } from "../profile.js";
 import { resolveBuiltin, sha256 } from "../registry.js";
 import { mergeWithExisting, renderAgentsMd, wrapInlineFence } from "../render.js";
 import type { CompileContext, EmittedFile, Emitter, HarnessId, ResolvedPrimitive } from "../types.js";
 
-const EMITTERS: Partial<Record<HarnessId, Emitter>> = {
+const EMITTERS: Record<HarnessId, Emitter> = {
   "claude-code": claudeCodeEmitter,
   codex: codexEmitter,
+  copilot: copilotEmitter,
+  cursor: cursorEmitter,
+  antigravity: antigravityEmitter,
+  vscode: vscodeEmitter,
 };
 
 export interface CompileOptions {

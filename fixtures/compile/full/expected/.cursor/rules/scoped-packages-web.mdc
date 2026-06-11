@@ -1,0 +1,7 @@
+---
+description: Scoped rules for packages/web/**
+globs: packages/web/**
+alwaysApply: false
+---
+
+React function components only; no class components.

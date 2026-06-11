@@ -46,12 +46,20 @@ VS Code gets settings wiring + verify-loop tasks.json. Fallbacks are shared-byte
 `.aesop/{roles,prompts}/`. The matrix doc gained a "Capabilities summary" table that
 `capabilities.test.ts` asserts cell-for-cell. 19 tests green.
 
-## Phase 4 — Sync + doctor
+## Phase 4 — Sync + doctor *(done 2026-06-10)*
 Lockfile hashing, drift detection, `--write-back` (instruction edits auto-lift; structural edits
 prompt), the full doctor check table, `doctor --matrix`.
 **Goal:** *10 fixtures with seeded drift → 10/10 detected with correct file/line; doctor catches
 all 8 canonical misconfigurations (broken test cmd, dead MCP, missing stops, oversize
 instructions, secret in config, YOLO outside container, missing tasks/, judge same family).*
+**Result:** compile refactored around `computeOutputs()` (one source of expected truth);
+`aesop sync` reports edited/missing/orphaned with first-differing line (10/10 seeded drifts
+caught at exact file:line), `--accept` regenerates preserving outside-fence content,
+`--write-back` lifts in-fence AGENTS.md additions into a manifest block and recompiles;
+`aesop doctor` catches all 8 codes (verify loop actually executed with timeout; MCP =
+binary-resolution for now, honest in the finding), `--fix` creates the state dir only,
+`--matrix` prints live capabilities; `aesop lessons [--promote]` and `aesop eject --force`
+shipped (both were Phase-4 table entries). 27 tests green; doctor/sync exit 3 on findings.
 
 ## Phase 5 — Registry federation
 Importers normalizing awesome-copilot (`.instructions.md`/`.prompt.md`/agents/skills) and ecc

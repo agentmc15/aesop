@@ -10,6 +10,10 @@ import { parseArgs } from "node:util";
 import { AesopError } from "./manifest.js";
 import { runInit, initSummary } from "./commands/init.js";
 import { runCompile, compileSummary } from "./commands/compile.js";
+import { runSync, syncSummary } from "./commands/sync.js";
+import { runDoctor, doctorSummary } from "./commands/doctor.js";
+import { runLessons } from "./commands/lessons.js";
+import { runEject } from "./commands/eject.js";
 import { listProfiles } from "./profile.js";
 
 const COMMANDS: Record<string, { phase: number; summary: string }> = {
@@ -54,6 +58,11 @@ async function main(): Promise<number> {
       help: { type: "boolean", short: "h" },
       check: { type: "boolean" },
       verbose: { type: "boolean" },
+      accept: { type: "boolean" },
+      "write-back": { type: "boolean" },
+      fix: { type: "boolean" },
+      matrix: { type: "boolean" },
+      promote: { type: "boolean" },
       harness: { type: "string" },
       pathway: { type: "string" },
       cwd: { type: "string" },
@@ -96,6 +105,38 @@ async function main(): Promise<number> {
       });
       console.log(values.json ? JSON.stringify(result, null, 2) : compileSummary(result, !!values.check));
       return values.check && result.drift.length ? 3 : 0;
+    }
+    case "sync": {
+      const result = await runSync({
+        cwd: values.cwd ?? process.cwd(),
+        ...(values.accept ? { accept: true } : {}),
+        ...(values["write-back"] ? { writeBack: true } : {}),
+      });
+      console.log(values.json ? JSON.stringify(result, null, 2) : syncSummary(result, { cwd: "", accept: values.accept ?? false, writeBack: values["write-back"] ?? false }));
+      return result.drift.length && !values.accept && !values["write-back"] ? 3 : 0;
+    }
+    case "doctor": {
+      const result = await runDoctor({
+        cwd: values.cwd ?? process.cwd(),
+        ...(values.fix ? { fix: true } : {}),
+        ...(values.matrix ? { matrix: true } : {}),
+      });
+      console.log(values.json ? JSON.stringify(result, null, 2) : doctorSummary(result));
+      return result.findings.length ? 3 : 0;
+    }
+    case "lessons": {
+      const result = await runLessons({
+        cwd: values.cwd ?? process.cwd(),
+        text: positionals.slice(1).join(" "),
+        ...(values.promote ? { promote: true } : {}),
+      });
+      console.log(values.json ? JSON.stringify(result, null, 2) : `recorded in ${result.file}${result.promoted ? " and promoted to an instruction rule (recompiled)" : ""}`);
+      return 0;
+    }
+    case "eject": {
+      const result = await runEject({ cwd: values.cwd ?? process.cwd(), ...(values.force ? { force: true } : {}) });
+      console.log(values.json ? JSON.stringify(result, null, 2) : `ejected: removed aesop.yaml and .aesop/; unfenced ${result.unfenced.length} file(s). The native files are yours.`);
+      return 0;
     }
     case "profile": {
       const sub = positionals[1] ?? "list";

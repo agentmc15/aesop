@@ -1,4 +1,5 @@
-/** `aesop compile` — manifest → native files. Pure render; all I/O lives here. */
+/** `aesop compile` — manifest → native files. computeOutputs() is the single source of expected
+ *  content; compile writes it, sync (Phase 4) diffs it against disk. */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { antigravityEmitter } from "../emitters/antigravity.js";
@@ -11,9 +12,17 @@ import { AesopError, parseManifest } from "../manifest.js";
 import { applyProfile, loadProfile } from "../profile.js";
 import { resolveBuiltin, sha256 } from "../registry.js";
 import { mergeWithExisting, renderAgentsMd, wrapInlineFence } from "../render.js";
-import type { CompileContext, EmittedFile, Emitter, HarnessId, ResolvedPrimitive } from "../types.js";
+import type {
+  CompileContext,
+  EmittedFile,
+  Emitter,
+  HarnessId,
+  Manifest,
+  Profile,
+  ResolvedPrimitive,
+} from "../types.js";
 
-const EMITTERS: Record<HarnessId, Emitter> = {
+export const EMITTERS: Record<HarnessId, Emitter> = {
   "claude-code": claudeCodeEmitter,
   codex: codexEmitter,
   copilot: copilotEmitter,
@@ -30,11 +39,13 @@ export interface CompileOptions {
   pathway?: string; // one-off override
 }
 
-export interface CompileResult {
-  files: { path: string; changed: boolean }[];
+export interface ComputedOutputs {
+  manifest: Manifest;
+  profile: Profile;
+  primitives: ResolvedPrimitive[];
   notes: string[];
-  /** Paths that would change — populated in --check mode; non-empty → exit 3. */
-  drift: string[];
+  /** path → expected final content (fence-merged against what's on disk now). */
+  outputs: Map<string, { content: string; fence: EmittedFile["fence"] }>;
 }
 
 async function readIfExists(path: string): Promise<string | undefined> {
@@ -45,7 +56,7 @@ async function readIfExists(path: string): Promise<string | undefined> {
   }
 }
 
-export async function runCompile(opts: CompileOptions): Promise<CompileResult> {
+export async function computeOutputs(opts: CompileOptions): Promise<ComputedOutputs> {
   const manifestRaw = await readIfExists(join(opts.cwd, "aesop.yaml"));
   if (manifestRaw === undefined) {
     throw new AesopError(1, `no aesop.yaml in ${opts.cwd} — run \`aesop init\` first`);
@@ -56,7 +67,6 @@ export async function runCompile(opts: CompileOptions): Promise<CompileResult> {
   const profile = loadProfile(profileName, opts.cwd, opts.pathway ? undefined : manifest.pathway.overrides);
   const { agents: prunedAgents, notes } = applyProfile(manifest, profile);
 
-  // Resolve everything the emitters need; the template rides along as an instructions primitive.
   const templateRef = (manifest.primitives.instructions?.template ?? "builtin:AGENTS.template").replace(/^builtin:/, "");
   const primitives: ResolvedPrimitive[] = [
     resolveBuiltin("instructions", templateRef),
@@ -66,10 +76,7 @@ export async function runCompile(opts: CompileOptions): Promise<CompileResult> {
     ...(manifest.primitives.hooks ?? []).map((ref) => resolveBuiltin("hook", ref)),
   ];
 
-  const effectiveManifest = {
-    ...manifest,
-    primitives: { ...manifest.primitives, agents: prunedAgents },
-  };
+  const effectiveManifest = { ...manifest, primitives: { ...manifest.primitives, agents: prunedAgents } };
   const ctx: CompileContext = { manifest: effectiveManifest, profile, primitives, root: opts.cwd };
 
   // AGENTS.md is the portable standard — emitted once by the core, not per-emitter.
@@ -80,10 +87,6 @@ export async function runCompile(opts: CompileOptions): Promise<CompileResult> {
   for (const harness of manifest.harnesses) {
     if (harnessFilter && !harnessFilter.includes(harness)) continue;
     const emitter = EMITTERS[harness];
-    if (!emitter) {
-      notes.push(`harness '${harness}': emitter lands in Phase 3 — skipped`);
-      continue;
-    }
     emitted.push(...emitter.emit(ctx));
     if (opts.verbose) {
       for (const [prim, why] of Object.entries(emitter.capabilities().fallback)) {
@@ -102,19 +105,38 @@ export async function runCompile(opts: CompileOptions): Promise<CompileResult> {
     byPath.set(f.path, f);
   }
 
+  const outputs = new Map<string, { content: string; fence: EmittedFile["fence"] }>();
+  for (const f of [...byPath.values()].sort((a, b) => a.path.localeCompare(b.path))) {
+    const existing = await readIfExists(join(opts.cwd, f.path));
+    const content = f.fence === "inline" ? mergeWithExisting(f.content, existing) : f.content;
+    outputs.set(f.path, { content, fence: f.fence });
+  }
+
+  return { manifest, profile, primitives, notes, outputs };
+}
+
+export interface CompileResult {
+  files: { path: string; changed: boolean }[];
+  notes: string[];
+  /** Paths that would change — populated in --check mode; non-empty → exit 3. */
+  drift: string[];
+}
+
+export async function runCompile(opts: CompileOptions): Promise<CompileResult> {
+  const { profile, primitives, notes, outputs } = await computeOutputs(opts);
+
   const result: CompileResult = { files: [], notes, drift: [] };
   const lockFiles: Record<string, string> = {};
-  for (const f of [...byPath.values()].sort((a, b) => a.path.localeCompare(b.path))) {
-    const abs = join(opts.cwd, f.path);
+  for (const [path, { content }] of outputs) {
+    const abs = join(opts.cwd, path);
     const existing = await readIfExists(abs);
-    const next = f.fence === "inline" ? mergeWithExisting(f.content, existing) : f.content;
-    const changed = existing !== next;
-    lockFiles[f.path] = sha256(next);
-    result.files.push({ path: f.path, changed });
-    if (changed) result.drift.push(f.path);
+    const changed = existing !== content;
+    lockFiles[path] = sha256(content);
+    result.files.push({ path, changed });
+    if (changed) result.drift.push(path);
     if (!opts.check && changed) {
       await mkdir(dirname(abs), { recursive: true });
-      await writeFile(abs, next, "utf8");
+      await writeFile(abs, content, "utf8");
     }
   }
 

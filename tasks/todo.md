@@ -1,22 +1,21 @@
-# Phase 3 — copilot, cursor, antigravity, vscode emitters ✅ (2026-06-10)
+# Phase 4 — sync + doctor ✅ (2026-06-10)
 
-Goal: same golden-fixture gate per harness; capabilities() matches docs/03-harness-matrix.md
-cell-for-cell.
+Goal: 10 seeded drifts → 10/10 at correct file:line; doctor catches all 8 canonical
+misconfigurations.
 
 ## Done
-- [x] src/emitters/shared.ts — slugify, .aesop/{roles,prompts}/ fallback builders (shared bytes
-      → collision-guard dedup), both MCP JSON dialects
-- [x] copilot: copilot-instructions.md (path blocks excluded — native applyTo files carry them),
-      .github/{instructions,prompts,agents,skills}, .vscode/mcp.json
-- [x] cursor: 00-aesop.mdc alwaysApply pointer, scoped-*.mdc globs, skill-*.mdc description
-      triggers, .cursor/mcp.json
-- [x] antigravity: generated GUARDRAILS.md (safety + tiers + invariants + stops); no GEMINI.md
-      (AGENTS.md wins precedence)
-- [x] vscode: settings.json wiring, tasks.json verify loop, mcp.json
-- [x] docs/03 matrix updated first (doc-first rule) + "Capabilities summary (tested)" table
-- [x] capabilities.test.ts — cell-for-cell vs the doc table; fallback descriptions non-trivial;
-      no native/fallback overlap
-- [x] full fixture → 6 harnesses, 47 golden files; path-scoping + dedup assertions
-- [x] 19 tests green
+- [x] compile refactor: computeOutputs() — one source of expected truth for compile AND sync
+- [x] sync: edited (file:line) / missing / orphaned; --accept; --write-back lifts in-fence
+      AGENTS.md additions into a manifest block + recompiles (mistake→rule mechanized);
+      outside-fence edits are NOT drift (preservation contract)
+- [x] doctor: 8 coded findings; lenient manifest load (schema errors are findings, not crashes);
+      verify loop actually executed (120s timeout); MCP = binary resolution (honest); --fix
+      creates state dir only; --matrix prints live capabilities
+- [x] lessons [--promote] and eject --force (Phase-4 COMMANDS table entries)
+- [x] 27 tests green incl. both goal lines; CLI exits verified live (doctor 0/3, sync 0/3)
 
-# Next: Phase 4 — sync + doctor (docs/08-roadmap.md)
+## Review
+- Orphan detection rides the lockfile: file tracked but no longer produced → flagged.
+- Write-back validates the manifest before writing; an invalid lift aborts cleanly.
+
+# Next: Phase 5 — registry federation (awesome-copilot + ecc importers, SHA pinning, update)

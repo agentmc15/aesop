@@ -1,0 +1,10 @@
+# .codex/config.toml — compiled by aesop from aesop.yaml; edit the manifest, not this file.
+
+# pathway: accuracy-max (model tier 'strong' — map to your configured model)
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+[mcp_servers.github]
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-github"]
+env = { "GITHUB_TOKEN" = "${GITHUB_TOKEN}" }

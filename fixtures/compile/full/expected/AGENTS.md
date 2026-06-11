@@ -1,3 +1,4 @@
+<!-- aesop:begin v1 sha256:716d7295417aaf696c4595a742ecaf39aad442b43c883efd3b14489bec813128 -->
 # AGENTS.md — agent instructions
 
 Everything above the `## Project` block is portable doctrine; the `## Project` block holds this
@@ -156,6 +157,31 @@ feedback is a machine for generating confident mistakes.
 
 ---
 
+## Domain rules
+- API handlers never touch the DB directly; go through repositories.
+
+---
+
+## Scoped rules (apply within the matching paths)
+
+### `packages/web/**`
+
+React function components only; no class components.
+
+---
+
 ## Project
 
-{{PROJECT_BLOCK}}
+- **Stack:** typescript, node20, postgres
+- **Build:** `pnpm build`
+- **Test:** `pnpm test`
+- **Lint:** `pnpm lint`
+- **Monorepo packages:** packages/*
+- **Conventions (load-bearing — never violate):**
+  - Correlate accounts by persistent user ID, never email.
+  - All money math in integer cents.
+- **Models:** primary: claude; judge: openai (different family, by design)
+- **Pathway:** accuracy-max (effort xhigh; stops: 80 iterations / 4 no-progress / $100)
+- **Review bandwidth:** at most 3 parallel agents
+- **Notes directory:** `tasks/` (todo.md, lessons.md) — read at session start.
+<!-- aesop:end -->

@@ -3,9 +3,14 @@
  * aesop — environment compiler for AI coding agents.
  * Library-first: commands live in src/commands/ and throw AesopError; only this shell exits.
  */
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { AesopError } from "./manifest.js";
 import { runInit, initSummary } from "./commands/init.js";
+import { runCompile, compileSummary } from "./commands/compile.js";
+import { listProfiles } from "./profile.js";
 
 const COMMANDS: Record<string, { phase: number; summary: string }> = {
   init: { phase: 1, summary: "detect project → interview → write aesop.yaml (--yes, --force, --harness a,b, --pathway p)" },
@@ -47,6 +52,8 @@ async function main(): Promise<number> {
       force: { type: "boolean" },
       json: { type: "boolean" },
       help: { type: "boolean", short: "h" },
+      check: { type: "boolean" },
+      verbose: { type: "boolean" },
       harness: { type: "string" },
       pathway: { type: "string" },
       cwd: { type: "string" },
@@ -78,6 +85,37 @@ async function main(): Promise<number> {
       });
       console.log(values.json ? JSON.stringify({ path: result.path, manifest: result.manifest }, null, 2) : initSummary(result));
       return 0;
+    }
+    case "compile": {
+      const result = await runCompile({
+        cwd: values.cwd ?? process.cwd(),
+        ...(values.check ? { check: true } : {}),
+        ...(values.verbose ? { verbose: true } : {}),
+        ...(values.harness ? { harness: values.harness } : {}),
+        ...(values.pathway ? { pathway: values.pathway } : {}),
+      });
+      console.log(values.json ? JSON.stringify(result, null, 2) : compileSummary(result, !!values.check));
+      return values.check && result.drift.length ? 3 : 0;
+    }
+    case "profile": {
+      const sub = positionals[1] ?? "list";
+      const root = values.cwd ?? process.cwd();
+      if (sub === "list") {
+        const profiles = listProfiles(root);
+        console.log(
+          values.json
+            ? JSON.stringify(profiles, null, 2)
+            : profiles.map((p) => `  ${p.name.padEnd(14)} (${p.source})`).join("\n")
+        );
+        return 0;
+      }
+      if (sub === "show" && positionals[2]) {
+        const dir = fileURLToPath(new URL("../profiles", import.meta.url));
+        console.log(readFileSync(join(dir, `${positionals[2]}.yaml`), "utf8"));
+        return 0;
+      }
+      console.error("usage: aesop profile [list | show <name>]   (new/set land in Phase 4)");
+      return 1;
     }
     default:
       console.error(`aesop ${cmd}: not yet implemented (lands in Phase ${known.phase} — docs/08-roadmap.md).`);

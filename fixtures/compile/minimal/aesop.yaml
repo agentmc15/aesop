@@ -1,0 +1,38 @@
+version: 1
+project:
+  name: minimal-app
+  stack:
+    - typescript
+    - node20
+  commands:
+    test: npm test
+    build: npm run build
+    lint: npm run lint
+  review_bandwidth: 2
+harnesses:
+  - claude-code
+pathway:
+  profile: balanced
+registries:
+  - builtin
+primitives:
+  instructions:
+    template: builtin:AGENTS.template
+  skills:
+    - verify-loop
+  agents:
+    - explorer
+    - verify-app
+  commands:
+    - commit-pr
+  mcp: []
+  hooks: []
+  permissions:
+    mutate_allow:
+      - "git commit *"
+    irreversible:
+      - git push origin main
+    unattended: none
+  loops: []
+state:
+  dir: tasks/

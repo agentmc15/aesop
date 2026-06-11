@@ -1,0 +1,35 @@
+version: 1
+project:
+  name: lean-tool
+  stack:
+    - go
+  commands:
+    test: go test ./...
+    build: go build ./...
+  review_bandwidth: 1
+harnesses:
+  - codex
+pathway:
+  profile: token-lean
+registries:
+  - builtin
+primitives:
+  instructions:
+    template: builtin:AGENTS.template
+  skills:
+    - verify-loop
+  agents:
+    - explorer
+    - verify-app
+    - critic
+  commands:
+    - commit-pr
+  mcp: []
+  hooks: []
+  permissions:
+    mutate_allow:
+      - "git commit *"
+    unattended: none
+  loops: []
+state:
+  dir: tasks/

@@ -21,11 +21,16 @@ imported, not lost.*
 24/24 aimed fields; imports preserved; same-family judge and stop-less goal recipes rejected).
 Runtime deps justified: `yaml` (manifest fidelity), `ajv` (the schema IS the contract).
 
-## Phase 2 — Compiler + first two emitters
+## Phase 2 — Compiler + first two emitters *(done 2026-06-10)*
 Resolve/lock pipeline, profile application, fence writer, and the **claude-code** and **codex**
 emitters (the two with native `/goal`).
 **Goal:** *golden-fixture round-trip: compile on 3 fixture manifests matches checked-in expected
 output byte-for-byte; `compile --check` exits 0/3 correctly in CI.*
+**Result:** `src/{profile,registry,render}.ts`, `src/emitters/{claude-code,codex}.ts`,
+`src/commands/compile.ts`; agent seeds normalized to canonical frontmatter; AGENTS.md emitted
+once by the core (CLAUDE.md = `@AGENTS.md`); 3 golden fixtures byte-compared; --check exits 0/3
+verified at CLI level; token-lean pruning + outside-fence preservation + one-off `--pathway`
+override all tested. 17 tests green. `aesop profile list|show` shipped early.
 
 ## Phase 3 — Four more emitters
 **copilot** (copilot-instructions.md + path-scoped `.instructions.md` + `.prompt.md` +

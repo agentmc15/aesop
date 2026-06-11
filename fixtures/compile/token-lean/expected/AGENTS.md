@@ -1,3 +1,4 @@
+<!-- aesop:begin v1 sha256:7e5f965ac2e980441b746541d857e0a000cecdf6d007c620fb27bbd866d109e8 -->
 # AGENTS.md — agent instructions
 
 Everything above the `## Project` block is portable doctrine; the `## Project` block holds this
@@ -158,4 +159,10 @@ feedback is a machine for generating confident mistakes.
 
 ## Project
 
-{{PROJECT_BLOCK}}
+- **Stack:** go
+- **Build:** `go build ./...`
+- **Test:** `go test ./...`
+- **Pathway:** token-lean (effort medium; stops: 20 iterations / 2 no-progress / $5)
+- **Review bandwidth:** at most 1 parallel agents
+- **Notes directory:** `tasks/` (todo.md, lessons.md) — read at session start.
+<!-- aesop:end -->

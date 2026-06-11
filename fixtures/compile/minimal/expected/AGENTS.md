@@ -1,3 +1,4 @@
+<!-- aesop:begin v1 sha256:d0f66e5c6d312d70da3127184d9ef5e143b2306a4ccc095f7768eb0ac2b14f69 -->
 # AGENTS.md — agent instructions
 
 Everything above the `## Project` block is portable doctrine; the `## Project` block holds this
@@ -158,4 +159,11 @@ feedback is a machine for generating confident mistakes.
 
 ## Project
 
-{{PROJECT_BLOCK}}
+- **Stack:** typescript, node20
+- **Build:** `npm run build`
+- **Test:** `npm test`
+- **Lint:** `npm run lint`
+- **Pathway:** balanced (effort high; stops: 40 iterations / 3 no-progress / $25)
+- **Review bandwidth:** at most 2 parallel agents
+- **Notes directory:** `tasks/` (todo.md, lessons.md) — read at session start.
+<!-- aesop:end -->

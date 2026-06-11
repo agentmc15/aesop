@@ -1,30 +1,28 @@
-# Phase 1 — Manifest + detect ✅ (2026-06-10)
+# Phase 2 — Compiler + claude-code/codex emitters ✅ (2026-06-10)
 
-Goal (docs/08-roadmap.md): `aesop init` on 5 real repos (node, python, go, rust, monorepo)
-produces a schema-valid manifest with ≥80% of fields auto-detected; existing CLAUDE.md/AGENTS.md
-content is imported, not lost.
+Goal: golden-fixture round-trip — compile on 3 fixture manifests matches checked-in expected
+output byte-for-byte; `compile --check` exits 0/3 correctly in CI.
 
-## Plan — all done
+## Done
 
-- [x] Lock `schemas/aesop.schema.json` (v1 LOCKED) → ajv compiles it; all fixtures validate
-- [x] `src/manifest.ts` — load/validate/serialize (ajv + yaml); judge-family ≠ primary enforced
-- [x] `src/detect.ts` — precedence: package scripts > Makefile > language defaults > CI scan
-- [x] `src/import-existing` (folded into detect.ts — instruction files collected with harness
-      inference in one pass; a separate module would have re-walked the same files)
-- [x] `src/interview.ts` — readline interview; `--yes`/non-TTY → defaults
-- [x] `src/commands/init.ts` — refuses overwrite without --force; prints the three problems
-- [x] `src/index.ts` — parseArgs routing; AesopError → exit codes (0/1/2)
-- [x] 5 fixtures in `fixtures/init/`
-- [x] `registry/commands/` (4 seeds) + `registry/hooks/` (2 seeds)
-- [x] 11 tests green; goal-line tests encode the criterion verbatim (detection 24/24)
-- [x] Phase 1 marked done in docs/08-roadmap.md
+- [x] 8 registry agent seeds normalized to canonical YAML frontmatter
+- [x] Template cleaned: kit header removed, `{{PROJECT_BLOCK}}` parameterized
+- [x] `src/profile.ts` — kit-YAML → locked Profile; overrides; agent pruning with notes
+- [x] `src/registry.ts` — builtin resolver + sha256; frontmatter/agent/hook parsers
+- [x] `src/render.ts` — AGENTS.md renderer, fence wrap/merge/drift
+- [x] `src/emitters/claude-code.ts` — CLAUDE.md (@AGENTS.md), .claude/*, .mcp.json, settings
+      (permissions allow/ask mapping, hooks → Pre/PostToolUse)
+- [x] `src/emitters/codex.ts` — .codex/{config.toml, agents/*.toml, prompts, skills}
+- [x] `src/commands/compile.ts` — resolve → profile → render → merge → write/check + lock.json
+- [x] `aesop profile list|show`
+- [x] 3 fixtures + goldens (minimal 7 files / full 25 / token-lean 5)
+- [x] 17 tests green; CLI exit codes 0/3 verified live
 
 ## Review
 
-- Verified end-to-end: `node dist/index.js init --yes --cwd <tmp copy of node-app>` writes a
-  valid manifest, imports CLAUDE.md, prints the three problems.
-- Runtime deps added (justified): `yaml`, `ajv`. Nothing else.
-- Deferred intentionally: `init --refresh` (re-detect + diff) → Phase 4 with sync; interactive
-  interview is implemented but only exercisable manually (TTY) — covered again in Phase 4 doctor.
+- format-on-write hook emits only when `project.commands.format` exists — no invented formatter.
+- Collision guard: two emitters producing different content for one path is a hard error.
+- Goldens regenerate via compile-into-temp + copy (documented in git history); lock.json excluded
+  from goldens (hashes covered by byte-compare of the files themselves).
 
-# Next: Phase 2 — Compiler + claude-code/codex emitters (docs/08-roadmap.md)
+# Next: Phase 3 — copilot, cursor, antigravity, vscode emitters (docs/08-roadmap.md)

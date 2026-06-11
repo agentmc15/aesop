@@ -1,0 +1,83 @@
+# aesop.yaml — single source of truth for this project's agentic environment.
+# Dogfood: aesop's own repo, managed by aesop (Phase 7).
+# Everything under .claude/ .codex/ AGENTS.md is compiled output. Edit here, then: aesop compile
+version: 1
+project:
+  name: aesop
+  stack:
+    - typescript
+    - node20
+  commands:
+    build: npm run build
+    test: npm test
+    lint: npm run lint
+  invariants:
+    - "Emitters are pure functions (manifest, primitives, profile) → files; all I/O lives in the CLI shell — no filesystem, network, or clock inside emit()."
+    - "src/types.ts and schemas/aesop.schema.json are LOCKED. Changing them is a breaking change: flag it and stop for approval."
+    - "docs/03-harness-matrix.md is updated BEFORE the emitter it describes (doc first, then code); capabilities() must match it cell-for-cell."
+    - "Emitted files reference secret NAMES only, never values."
+    - "Each roadmap phase lands with tests encoding its Goal line verbatim."
+    - "Goal recipes without all three hard stops must fail validation — never default them in silently."
+    - "No new runtime dependencies unless the phase plan justifies them (currently yaml and ajv only)."
+    - "Git commits carry no AI co-author trailers or generated-with footers."
+  models:
+    primary:
+      family: claude
+      tier: strong
+    judge:
+      family: openai
+      tier: strong
+  review_bandwidth: 2
+harnesses:
+  - claude-code
+  - codex
+pathway:
+  profile: balanced
+registries:
+  - builtin
+primitives:
+  instructions:
+    template: builtin:AGENTS.template
+    blocks:
+      - scope: project
+        content: |
+          ## Working in this repo
+          - Read `PLAN.md` first, then `docs/01–08`. The build is phase-gated
+            (`docs/08-roadmap.md`): one reviewable change per phase, gated by its Goal line.
+          - The golden fixtures under `fixtures/compile/*/expected/` are the compiler's contract —
+            regenerate them deliberately, never by reflex, and read the diff.
+  skills:
+    - spec-first
+    - verify-loop
+    - lessons-loop
+  agents:
+    - explorer
+    - verify-app
+    - spec-reviewer
+  commands:
+    - commit-pr
+    - fix-ci
+    - add-learning
+  mcp: []
+  hooks:
+    - block-dangerous-commands
+  permissions:
+    mutate_allow:
+      - "npm *"
+      - "git commit *"
+      - git push origin HEAD
+    irreversible:
+      - git push origin main
+      - npm publish
+    unattended: none
+  loops:
+    - name: green-tests
+      goal: the full test suite passes
+      verify: npm test
+      plan_gate: true
+      stops:
+        max_iterations: 40
+        no_progress_after: 3
+        budget_usd: 25
+state:
+  dir: tasks/

@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "profile": "balanced",
+  "primitives": {
+    "agent:explorer": {
+      "registry": "builtin",
+      "sha256": "4df8a6bba091834f62eb2ec62223fbec93c1a1cdf65fd4ffa9aa670ba01039e1"
+    },
+    "agent:verify-app": {
+      "registry": "builtin",
+      "sha256": "fb97cc743ffa57a5b24a2bff934c4595791875039abc3db581a5cbb1fa41b0a9"
+    },
+    "command:add-learning": {
+      "registry": "builtin",
+      "sha256": "10595cafedb58027409afe9308bbf73a933d3f65514f25ff63e4efa93afc747c"
+    },
+    "command:commit-pr": {
+      "registry": "builtin",
+      "sha256": "0ea5330d9e929843475d4cf92817d8f5629590e70ef9410fc49dbd16063b9829"
+    },
+    "command:fix-ci": {
+      "registry": "builtin",
+      "sha256": "13ce92f9a25b1698a83547eef24a3aee073e0226c7da5011d3192a8d9527419d"
+    },
+    "hook:block-dangerous-commands": {
+      "registry": "builtin",
+      "sha256": "caa0d8d20c64e709925af01bc457f1861f1e6e07ce6740cc42ceef0344792532"
+    },
+    "instructions:AGENTS.template": {
+      "registry": "builtin",
+      "sha256": "80f2ed84e5f2ce3a59a2d36565d5818444c6bcb6ee31ce2260c3770060f784b6"
+    },
+    "skill:lessons-loop": {
+      "registry": "builtin",
+      "sha256": "b99392208693f84500667d4c0cd4e9be2821de62da9a3a0627e7b358e35b6bc0"
+    },
+    "skill:spec-first": {
+      "registry": "builtin",
+      "sha256": "7a08423e3de36e783fe0c350a8eda8a184ace5e2cd3b87a7bf3cc869e67754dd"
+    },
+    "skill:verify-loop": {
+      "registry": "builtin",
+      "sha256": "d442db92b308d2ab7b850bd3cca311b70a55a9b75cff8f480feab154b86ffd3b"
+    }
+  },
+  "files": {
+    ".aesop/goals/green-tests.md": "fe128bfaca1b800a9e181f0196a2e012fe4443bddb0b381a433310c907e3f929",
+    ".aesop/goals/green-tests.ralph.json": "2f9c4c624e42c7dbf889be8eda490836cdb72bba038dac7a8e29225d02e6cc24",
+    ".aesop/orchestration.md": "fda5325ae65878a91606f208a2f95473e57c703db99bd81315cc4749281a12fa",
+    ".claude/agents/explorer.md": "4c87b6291522decbcf12c41badb8290c81e2af8bd7d6a22ad7f38564464129dd",
+    ".claude/agents/verify-app.md": "7ed966e6bfdbe7952aee9681dbde7aef00c7a58b5c782ed910d8200b87d799f7",
+    ".claude/commands/add-learning.md": "8f11c79b10325e55098b2a64a4b4cd030ac56202dbeadb9ff23d9def9e0382be",
+    ".claude/commands/commit-pr.md": "9cc2055c66f16c9ff0a5db6888b3b0ca18beb0679c13f0953fec8f6fbb235ec3",
+    ".claude/commands/fix-ci.md": "04c419b8a91d41f813387af109f32b7666d0b004aef3cb4a4dcff732bbaab54f",
+    ".claude/commands/goal-green-tests.md": "efbc976ebba5a1d720ee1a2c213e2a062d10f3c3213a0a7e46cecee3101b8966",
+    ".claude/settings.json": "e140e09cae8342d6fb85b4162306749c5f4035b0791d633c956f6023f09e9d1e",
+    ".claude/skills/lessons-loop/SKILL.md": "f9579520fe386a98f53626d491b6b21d4fbb024161319c89f0f07c3718c8fedc",
+    ".claude/skills/spec-first/SKILL.md": "e1d2f4761facb3a1f6dda6a2fc9d7daf69ee4aeac61963909f27cb7a4abd90a9",
+    ".claude/skills/verify-loop/SKILL.md": "06560b07d54529c70d71de36a9091e98ad455ae61faf43a1fc1c3d7a22da6167",
+    ".codex/agents/explorer.toml": "d1f131bd86f5e833a6d774a8639827b357245907ba0714380e81273e8e862e12",
+    ".codex/agents/verify-app.toml": "177511317bb7cfa32cd774ab0faee6bb0805e6da39226af649c3cd3b0aad1827",
+    ".codex/config.toml": "701513cbb94c096097bb6a714096a2c527f656b3e74b4106349b0976108a60c0",
+    ".codex/prompts/add-learning.md": "8f11c79b10325e55098b2a64a4b4cd030ac56202dbeadb9ff23d9def9e0382be",
+    ".codex/prompts/commit-pr.md": "9cc2055c66f16c9ff0a5db6888b3b0ca18beb0679c13f0953fec8f6fbb235ec3",
+    ".codex/prompts/fix-ci.md": "04c419b8a91d41f813387af109f32b7666d0b004aef3cb4a4dcff732bbaab54f",
+    ".codex/prompts/goal-green-tests.md": "efbc976ebba5a1d720ee1a2c213e2a062d10f3c3213a0a7e46cecee3101b8966",
+    ".codex/skills/lessons-loop/SKILL.md": "f9579520fe386a98f53626d491b6b21d4fbb024161319c89f0f07c3718c8fedc",
+    ".codex/skills/spec-first/SKILL.md": "e1d2f4761facb3a1f6dda6a2fc9d7daf69ee4aeac61963909f27cb7a4abd90a9",
+    ".codex/skills/verify-loop/SKILL.md": "06560b07d54529c70d71de36a9091e98ad455ae61faf43a1fc1c3d7a22da6167",
+    "AGENTS.md": "7c666c21412679c7d3afdd32c84b54f0c95e14da35ecdcdda3407e88be89c404",
+    "CLAUDE.md": "a8d98a871f17684f174edeb6310030dd959f824d380cf566b8b4bb5a57a898c2"
+  }
+}

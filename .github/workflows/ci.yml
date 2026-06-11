@@ -1,0 +1,20 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm test
+      # the environment is compiled output — drift fails the build
+      - run: node dist/index.js compile --check
+      # and it has to be healthy, by aesop's own definition
+      - run: node dist/index.js doctor

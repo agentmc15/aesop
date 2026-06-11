@@ -131,12 +131,15 @@ export async function runDoctor(opts: DoctorOptions): Promise<DoctorResult> {
     }
   }
 
-  // 6 — skip-permissions is only sanctioned inside a container.
+  // 6 — skip-permissions is only sanctioned inside a container. Lines that are themselves the
+  // guard (the block-dangerous-commands hook quotes the flag in its deny pattern) don't count.
   if (manifest.primitives?.permissions?.unattended !== "devcontainer") {
     for (const rel of YOLO_SCAN) {
       const content = await readIf(join(opts.cwd, rel));
       if (!content) continue;
-      const line = scanForLine(content, /--dangerously-skip-permissions/);
+      const lines = content.split("\n");
+      const idx = lines.findIndex((l) => l.includes("--dangerously-skip-permissions") && !l.includes("blocked by aesop"));
+      const line = idx + 1;
       if (line) {
         result.findings.push({ code: "yolo", message: "--dangerously-skip-permissions used outside a devcontainer (set permissions.unattended or remove it)", at: `${rel}:${line}` });
       }

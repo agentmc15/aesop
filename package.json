@@ -1,16 +1,18 @@
 {
   "name": "aesop",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Environment compiler for AI coding agents — one manifest, every harness (Claude Code, Codex, Copilot, Cursor, Antigravity, VS Code), your pathway.",
   "type": "module",
   "bin": { "aesop": "dist/index.js" },
   "main": "dist/index.js",
   "files": ["dist", "registry", "profiles", "schemas"],
+  "repository": { "type": "git", "url": "git+https://github.com/agentmc15/aesop.git" },
   "scripts": {
     "build": "tsc",
     "test": "npm run build && node --test dist/*.test.js",
     "lint": "tsc --noEmit",
-    "dev": "tsx src/index.ts"
+    "dev": "tsx src/index.ts",
+    "prepublishOnly": "npm test"
   },
   "engines": { "node": ">=20" },
   "license": "MIT",

@@ -17,6 +17,8 @@ import { runEject } from "./commands/eject.js";
 import { runAdd, runRemove, runList } from "./commands/add.js";
 import { runUpdate, updateSummary } from "./commands/update.js";
 import { goalList, goalNew, goalRun, goalRunSummary, goalShow } from "./commands/goal.js";
+import { runBundle, bundleSummary, type BundleFormat } from "./commands/bundle.js";
+import { serveMcp } from "./commands/mcp.js";
 import { listProfiles } from "./profile.js";
 
 const COMMANDS: Record<string, { phase: number; summary: string }> = {
@@ -72,6 +74,7 @@ async function main(): Promise<number> {
       goal: { type: "string" },
       verify: { type: "string" },
       agent: { type: "string" },
+      format: { type: "string" },
       "max-iterations": { type: "string" },
       "no-progress-after": { type: "string" },
       "budget-usd": { type: "string" },
@@ -210,6 +213,24 @@ async function main(): Promise<number> {
     case "update": {
       const result = await runUpdate({ cwd: values.cwd ?? process.cwd(), ...(values.apply ? { apply: true } : {}) });
       console.log(values.json ? JSON.stringify(result, null, 2) : updateSummary(result));
+      return 0;
+    }
+    case "bundle": {
+      const format = (values.format ?? "claude-plugin") as BundleFormat;
+      if (!["claude-plugin", "copilot-plugin", "tarball"].includes(format)) {
+        console.error("usage: aesop bundle [--format claude-plugin|copilot-plugin|tarball]");
+        return 1;
+      }
+      const result = await runBundle({ cwd: values.cwd ?? process.cwd(), format });
+      console.log(values.json ? JSON.stringify(result, null, 2) : bundleSummary(result));
+      return 0;
+    }
+    case "mcp": {
+      if (positionals[1] !== "serve") {
+        console.error("usage: aesop mcp serve   (stdio MCP server exposing compile/sync/doctor/add/list/lessons/goal_*)");
+        return 1;
+      }
+      await serveMcp("0.1.0"); // serves until stdin closes (client owns the lifecycle)
       return 0;
     }
     case "lessons": {

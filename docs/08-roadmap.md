@@ -95,11 +95,21 @@ interactive Claude Code + token spend → exercised in Phase 7 dogfooding. Progr
 through the verify lens: identical verify output N consecutive ticks ⇒ no-progress halt
 (documented in every recipe doc). 40 tests green.
 
-## Phase 7 — Bundle + MCP + ship
+## Phase 7 — Bundle + MCP + ship *(done 2026-06-10)*
 `bundle` (claude-plugin, copilot-plugin, tarball), `aesop mcp serve`, npm publish as `aesop`
 (or scoped fallback), dogfood: this repo managed by itself.
 **Goal:** *a teammate installs the full environment with one command; `aesop doctor` is green on
 Aesop's own repo, compiled by Aesop.*
+**Result:** `bundle` ships three wrappers (claude-plugin with `.claude-plugin/plugin.json` +
+marketplace.json → one-command `/plugin install`; copilot-plugin dir; tarball of every managed
+file). `mcp serve` is a hand-rolled stdio JSON-RPC server (no SDK — the no-runtime-deps rule
+holds) exposing compile/sync/doctor/add/list/lessons/goal_* — E2E-tested over real stdio.
+Packaging verified via `npm pack --dry-run` (ships dist+registry+profiles+schemas only; v0.1.0;
+prepublishOnly runs the suite). **`npm publish` deliberately NOT run** — irreversible/public;
+the command is ready when the owner is. **DOGFOOD DONE:** this repo's AGENTS.md/CLAUDE.md/
+.claude/.codex are compiled from `aesop.yaml` (25 files), `doctor` exits 0, `compile --check`
+clean, and CI gates both. The doctor's YOLO check learned to not flag its own
+block-dangerous-commands hook. 44 tests green.
 
 ---
 

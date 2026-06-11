@@ -38,10 +38,18 @@ engineering. See [`docs/research/`](docs/research/) for verified notes and sourc
 
 ## Status
 
-**Phase 0 — rails.** The comprehensive plan ([`PLAN.md`](PLAN.md)), the schemas, the seed
-registry, and the CLI skeleton with locked interfaces. Built to be finished by an agentic harness,
-phase by phase, against locked schemas — see [`docs/08-roadmap.md`](docs/08-roadmap.md) for the
-kickoff prompts.
+**v0.1.0 — all 8 roadmap phases complete** ([`docs/08-roadmap.md`](docs/08-roadmap.md)), every
+phase gated by tests that encode its goal line verbatim. This repo is **managed by Aesop itself**:
+`AGENTS.md`, `CLAUDE.md`, `.claude/`, `.codex/` here are compiled from [`aesop.yaml`](aesop.yaml),
+and CI fails on drift (`compile --check`) or an unhealthy environment (`doctor`).
+
+Working today: `init` (detect + interview) · `compile` (6 harnesses, golden-fixture-gated) ·
+`sync` (drift with file:line; `--write-back` lifts in-fence edits into the manifest) · `doctor`
+(8-point audit) · `add`/`remove`/`list`/`update` (federated registries: builtin, ecc-style,
+awesome-copilot-style, `path:`/`github:` sources, vendored + SHA-pinned) · `goal`
+(native `/goal` emission + a portable Ralph runner with the three hard stops enforced) ·
+`lessons --promote` · `bundle` (claude-plugin / copilot-plugin / tarball) · `mcp serve`
+(drive Aesop from inside any agent session) · `eject` (no lock-in).
 
 ## The one idea
 

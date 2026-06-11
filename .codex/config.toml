@@ -1,0 +1,5 @@
+# .codex/config.toml — compiled by aesop from aesop.yaml; edit the manifest, not this file.
+
+# pathway: balanced (model tier 'strong' — map to your configured model)
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"

@@ -327,6 +327,9 @@ docs/
   06-cli-spec.md        every command: flags, exit codes, JSON output
   07-manifest-schema.md aesop.yaml, annotated
   08-roadmap.md         phases 0–7 with kickoff prompts (BUILD-WITH-AN-AGENT style)
+  guides/               user documentation: getting started · adopting · everyday workflow ·
+                        skills/agents/pathways/goals/MCP · registries · team rollout ·
+                        per-harness notes · troubleshooting (see guides/README.md)
   research/             verified notes: karpathy · boris-cherny · loop-engineering ·
                         prior-art (ecc, awesome-copilot, karpathy-skills, the kit) · references
 registry/               seed primitives: skills/ agents/ instructions/ mcp/ plugins/ loops/

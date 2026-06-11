@@ -12,6 +12,7 @@
     "test": "npm run build && node --test dist/*.test.js",
     "lint": "tsc --noEmit",
     "dev": "tsx src/index.ts",
+    "prepare": "npm run build",
     "prepublishOnly": "npm test"
   },
   "engines": { "node": ">=20" },

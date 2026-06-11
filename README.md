@@ -8,11 +8,16 @@ GitHub Copilot (CLI + VS Code), Cursor, Antigravity, VS Code.
 > Aesop tells your project's story to every agent, in each agent's native tongue.
 
 ```bash
-npx aesop init        # detect your project, answer a short interview → aesop.yaml
-npx aesop compile     # emit native config for every harness you selected
-npx aesop doctor      # audit: does the agent have a real verify loop? working MCP? sane budgets?
-npx aesop sync        # detect drift between manifest and emitted files; --write-back lifts edits
+npm install -g github:agentmc15/aesop   # (after the npm publish: just `npx aesop`)
+
+aesop init            # detect your project, answer a short interview → aesop.yaml
+aesop compile         # emit native config for every harness you selected
+aesop doctor --fix    # audit: does the agent have a real verify loop? working MCP? sane budgets?
+aesop sync            # detect drift between manifest and emitted files; --write-back lifts edits
 ```
+
+**New here? → [Getting started](docs/guides/getting-started.md)** (zero to a compiled
+environment and a running goal in ~10 minutes).
 
 One manifest (`aesop.yaml`) is the source of truth. Everything under `.claude/`, `.github/`,
 `.cursor/`, `.codex/`, `AGENTS.md`, `GEMINI.md` is compiled output — regenerable, drift-checked,
@@ -50,6 +55,28 @@ awesome-copilot-style, `path:`/`github:` sources, vendored + SHA-pinned) · `goa
 (native `/goal` emission + a portable Ralph runner with the three hard stops enforced) ·
 `lessons --promote` · `bundle` (claude-plugin / copilot-plugin / tarball) · `mcp serve`
 (drive Aesop from inside any agent session) · `eject` (no lock-in).
+
+## Documentation
+
+**Guides** ([index](docs/guides/README.md)) — task-oriented, for using Aesop:
+
+| | |
+|---|---|
+| [Getting started](docs/guides/getting-started.md) | first run, end to end |
+| [Adopting an existing project](docs/guides/adopting-an-existing-project.md) | you already have CLAUDE.md / AGENTS.md / rules |
+| [The everyday workflow](docs/guides/everyday-workflow.md) | sync, write-back, lessons, doctor — the daily loop |
+| [Skills & commands](docs/guides/skills-and-commands.md) · [Subagents](docs/guides/subagents.md) · [Pathways](docs/guides/pathways.md) | the primitives, used and authored |
+| [Goals & loops](docs/guides/goals-and-loops.md) | native `/goal`, the Ralph runner, the three hard stops |
+| [MCP, hooks & permissions](docs/guides/mcp-hooks-permissions.md) | real tools + hard policy + tiers |
+| [Registries & updates](docs/guides/registries.md) · [Team rollout](docs/guides/team-rollout.md) | federation, bundling, org standards |
+| [Agent-driven Aesop](docs/guides/agent-driven.md) | `mcp serve`: the agent repairs its own environment |
+| [Per-harness notes](docs/guides/harnesses.md) · [Troubleshooting](docs/guides/troubleshooting.md) | specifics and fixes |
+
+**Reference** — [CLI](docs/06-cli-spec.md) · [`aesop.yaml`](docs/07-manifest-schema.md) ·
+[harness matrix](docs/03-harness-matrix.md) (tested against the emitters).
+
+**Design** — [PLAN.md](PLAN.md) and [docs/01–08](docs/) for how and why Aesop is built;
+[docs/research/](docs/research/) for the verified Karpathy / Cherny / Osmani grounding.
 
 ## The one idea
 

@@ -1,20 +1,22 @@
-# Phase 7 — bundle + MCP + ship + dogfood ✅ (2026-06-10)
+# Documentation hardening ✅ (2026-06-10)
 
-Goal: one-command install; doctor green on Aesop's own repo, compiled by Aesop.
+User request: make documentation, how-tos, and usage guides much more robust.
 
 ## Done
-- [x] doctor YOLO check no longer flags its own block-dangerous-commands hook
-- [x] bundle: claude-plugin (+plugin.json +marketplace.json → /plugin install aesop@aesop-marketplace),
-      copilot-plugin dir, tarball of all managed files
-- [x] mcp serve: hand-rolled stdio JSON-RPC (no SDK dep) — compile/sync/doctor/add/list/
-      lessons/goal_list/goal_run; E2E-tested over real stdio
-- [x] packaging: v0.1.0, repository field, prepublishOnly=test; npm pack --dry-run verified
-      (dist+registry+profiles+schemas only). npm publish NOT run — owner's call.
-- [x] DOGFOOD: aesop.yaml at root; hand AGENTS.md/CLAUDE.md replaced by compiled output
-      (25 files); doctor exit 0; compile --check clean; live bundle smoke (11 files)
-- [x] CI: npm test + compile --check + doctor
-- [x] 44 tests green
+- [x] docs/guides/ — 13 task-oriented user guides (Diátaxis-style, separate from the
+      design docs in docs/01-08): index, getting-started tutorial, adopting-existing,
+      everyday-workflow, skills-and-commands, subagents, pathways, goals-and-loops,
+      mcp-hooks-permissions, registries, team-rollout, agent-driven (MCP), harnesses
+      (per-harness notes ×6), troubleshooting+FAQ
+- [x] docs/06-cli-spec.md rewritten as the complete AS-BUILT CLI reference — fixed drift
+      from implementation (--from-existing and profile new/set were spec'd but never built;
+      goal subcommands, bundle --format, list --available now documented)
+- [x] docs/07 fixed (init --refresh was documented but unimplemented)
+- [x] package.json: "prepare" script so `npm install -g github:agentmc15/aesop` builds dist
+      (installable pre-publish — getting-started depends on it)
+- [x] README: install line, getting-started pointer, full Documentation section; PLAN repo map
+- [x] Verified: all internal markdown links resolve (scripted check); 44 tests green;
+      compile --check clean; npm pack 158 files
 
-## All 8 phases complete. Remaining for the owner:
-- `npm publish` when ready (prepublishOnly runs the suite)
-- live native-/goal run (interactive session + spend) — the one goal-line clause testable only by hand
+## Remaining for the owner (unchanged)
+- npm publish when ready; live native-/goal run

@@ -20,8 +20,22 @@ aesop sync            # detect drift between manifest and emitted files; --write
 environment and a running goal in ~10 minutes).
 
 One manifest (`aesop.yaml`) is the source of truth. Everything under `.claude/`, `.github/`,
-`.cursor/`, `.codex/`, `AGENTS.md`, `GEMINI.md` is compiled output — regenerable, drift-checked,
-and ejectable (`aesop eject` leaves plain native files; no lock-in).
+`.cursor/`, `.codex/`, `.vscode/`, `AGENTS.md`, `GUARDRAILS.md` is compiled output — regenerable,
+drift-checked, and ejectable (`aesop eject` leaves plain native files; no lock-in).
+
+### Setting up by agent
+
+Already in a Claude Code / Codex / Copilot session? Paste this and the agent does the setup:
+
+```text
+Set up this repo's agent environment with Aesop (https://github.com/agentmc15/aesop):
+1. npm install -g github:agentmc15/aesop   # after the npm publish: npm i -g @agentmc15/aesop
+2. aesop init --yes        # then open aesop.yaml and add 2-3 project invariants under project.invariants
+3. aesop compile
+4. aesop doctor --fix      # repeat until exit code 0; exit 3 means findings to fix
+5. git add -A && git commit -m "Add aesop-managed agent environment"
+Ask me for the project invariants (rules you must never violate) before step 3.
+```
 
 ## Why
 

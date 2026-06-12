@@ -64,7 +64,7 @@ export async function loadManifest(cwd: string): Promise<Manifest> {
 }
 
 export function serializeManifest(manifest: Manifest, generatedNote: string): string {
-  const header = `# aesop.yaml — single source of truth for this project's agentic environment.\n# ${generatedNote}\n# Everything under .claude/ .github/ .cursor/ .codex/ AGENTS.md GEMINI.md is compiled output.\n# Edit this file, then run: aesop compile\n`;
+  const header = `# aesop.yaml — single source of truth for this project's agentic environment.\n# ${generatedNote}\n# Everything under .claude/ .github/ .cursor/ .codex/ .vscode/ AGENTS.md GUARDRAILS.md is compiled output.\n# Edit this file, then run: aesop compile\n`;
   return header + stringify(manifest, { lineWidth: 100 });
 }
 

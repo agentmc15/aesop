@@ -1,6 +1,7 @@
 # aesop.yaml — single source of truth for this project's agentic environment.
 # Dogfood: aesop's own repo, managed by aesop (Phase 7).
-# Everything under .claude/ .codex/ AGENTS.md is compiled output. Edit here, then: aesop compile
+# Everything under .claude/ .codex/ .cursor/ .github/ .vscode/ AGENTS.md GUARDRAILS.md is compiled output.
+# Edit here, then: aesop compile
 version: 1
 project:
   name: aesop

@@ -12,6 +12,12 @@ CI tip: treat `3` as failure, but route it to the environment owner, not the fea
 
 ## Common errors, decoded
 
+**`command not found: aesop` right after `npm install -g`**
+The npm global bin dir isn't on your `PATH`, or your version manager (nvm/volta/asdf) needs a
+new shell. Check `npm prefix -g` — its `bin/` must be on `PATH` — then open a fresh terminal
+(or `hash -r` / `rehash`). Worst case, run it without the global install:
+`npx github:agentmc15/aesop --help`.
+
 **`invalid aesop.yaml: /primitives/loops/0 must have required property 'stops'`**
 Every goal recipe needs all three hard stops — this is deliberate, not a default Aesop will fill
 in. Add `stops: { max_iterations, no_progress_after, budget_usd }`.
@@ -31,6 +37,12 @@ A manifest references foreign content that was never `add`ed (hand-edited manife
 **`registry 'z' is not declared in aesop.yaml`**
 `--from` only searches declared sources. Add it under `registries:` first. The short name is the
 last path segment (`github:affaan-m/ecc` → `ecc`).
+
+**`agent 'x' not found in any registry` (but you're sure it exists)**
+Names are exact, and upstream registries evolve — don't trust examples, browse what's actually
+there: `aesop list --available | grep -i <term>`. (Real case: awesome-copilot ships `nextjs`
+instructions, not `react`.) The first `list --available` / `add` against a `github:` registry
+clones it into `.aesop/cache/` — expect a delay proportional to the upstream repo size, once.
 
 **`emitter collision on <path>`**
 Two harnesses produced different content for one path — that's a bug worth reporting, not a

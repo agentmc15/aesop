@@ -3,21 +3,33 @@
 Zero to a compiled agentic environment — instruction files, skills, subagents, commands, hooks,
 permissions, and a runnable goal loop — in about ten minutes.
 
+## 0. Prerequisites
+
+- **Node ≥ 20** (`node --version`)
+- **git** — for your repo, and for pulling registry content (`aesop add` clones `github:` sources)
+
 ## 1. Install
 
 ```bash
-# until the npm publish lands:
+# until the npm publish lands (builds from source, ~30s):
 npm install -g github:agentmc15/aesop
 
 # after publish:
-npx @agentmc15/aesop --help
+npm install -g @agentmc15/aesop
 ```
 
-Requires Node ≥ 20. Check it works:
+Check it works — you should see the command list:
 
 ```bash
-aesop --help
+$ aesop --help
+aesop — tells your project's story to every agent, in each agent's native tongue.
+
+Usage: aesop <command> [options]   (every command supports --json)
+...
 ```
+
+If you get `command not found: aesop`, see
+[Troubleshooting](troubleshooting.md#common-errors-decoded).
 
 ## 2. Initialize your project
 
@@ -44,6 +56,10 @@ In a hurry (or in a script), skip the interview:
 ```bash
 aesop init --yes --harness claude-code,codex --pathway token-lean
 ```
+
+Valid `--harness` values (any comma-separated subset): `claude-code`, `codex`, `copilot`,
+`cursor`, `antigravity`, `vscode`. Valid `--pathway` values: `token-lean` (the right start),
+`balanced`, `accuracy-max`. You can change both in `aesop.yaml` at any time and recompile.
 
 Either way you end with one file — `aesop.yaml` — and a summary like:
 
@@ -90,6 +106,28 @@ What just happened:
 - **`.claude/` and friends** — subagents, slash commands, skills, settings (permission allowlist
   + hooks), all in each harness's native dialect.
 - **`.aesop/lock.json`** — hashes of everything generated, so drift is detectable.
+
+With the default `claude-code,codex` selection, your repo now looks like this (other harnesses
+add `.github/`, `.cursor/rules/`, `.vscode/`, `GUARDRAILS.md`):
+
+```
+your-repo/
+├── aesop.yaml             ← the manifest — the only file you edit by hand
+├── AGENTS.md              full instructions; read natively by Codex / Cursor / Antigravity
+├── CLAUDE.md              one-line @AGENTS.md import for Claude Code
+├── .claude/
+│   ├── agents/            subagents (explorer.md, verify-app.md)
+│   ├── commands/          slash commands (commit-pr.md, fix-ci.md, add-learning.md)
+│   ├── skills/            skills (spec-first/, verify-loop/, lessons-loop/)
+│   └── settings.json      permission allowlist + hooks
+├── .codex/
+│   ├── config.toml        Codex settings
+│   └── agents/ prompts/ skills/
+├── .aesop/
+│   ├── lock.json          hashes of everything generated → drift detection
+│   └── vendor/            registry content pulled by `aesop add` (commit it)
+└── tasks/                 todo.md + lessons.md — created by `doctor --fix` (step 4)
+```
 
 Generated files carry `<!-- aesop:begin … aesop:end -->` fences. You can write below the fence
 freely — it survives every recompile. To change what's *inside* the fence, edit `aesop.yaml` and
@@ -146,12 +184,24 @@ Two ways to run it:
 
 ## 7. Wire CI
 
-Two lines make the environment self-enforcing:
+Two checks make the environment self-enforcing — a complete GitHub Actions job:
 
 ```yaml
-- run: npx @agentmc15/aesop compile --check   # exit 3 if any generated file drifted
-- run: npx @agentmc15/aesop doctor            # exit 3 if the environment is unhealthy
+jobs:
+  agent-env:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install -g github:agentmc15/aesop   # after publish: npm i -g @agentmc15/aesop
+      - run: aesop compile --check   # exit 3 if any generated file drifted
+      - run: aesop doctor            # exit 3 if the environment is unhealthy
 ```
+
+With this in place, "the agent config is wrong" becomes a red build instead of a mystery three
+weeks later. (Aesop's own [`ci.yml`](../../.github/workflows/ci.yml) does exactly this.)
 
 ## Where to next
 

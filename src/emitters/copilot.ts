@@ -1,6 +1,7 @@
 /** GitHub Copilot emitter (CLI + VS Code agent mode) — .github/{copilot-instructions.md,
  *  instructions/*.instructions.md (applyTo), prompts/*.prompt.md, agents/*.md, skills/}, .vscode/mcp.json.
  *  Target formats: docs/03-harness-matrix.md (update the doc first, then this file). */
+import { stringify } from "yaml";
 import { parseAgent, refName } from "../registry.js";
 import { renderAgentsMd } from "../render.js";
 import { slugify, vscodeMcpJson } from "./shared.js";
@@ -25,7 +26,8 @@ export const copilotEmitter: Emitter = {
       const glob = block.scope.slice("path:".length);
       files.push({
         path: `.github/instructions/${slugify(glob)}.instructions.md`,
-        content: `---\napplyTo: "${glob}"\n---\n\n${block.content.trimEnd()}\n`,
+        // Serialize the applyTo value so a glob containing quotes/newlines can't inject frontmatter (F4).
+        content: `---\n${stringify({ applyTo: glob }, { lineWidth: 0 }).trimEnd()}\n---\n\n${block.content.trimEnd()}\n`,
         fence: "sidecar",
       });
     }
@@ -42,9 +44,10 @@ export const copilotEmitter: Emitter = {
       const ref = (ctx.manifest.primitives.agents ?? []).find((r) => refName(r) === resolved.name);
       const spec = parseAgent(resolved, ref);
       const readOnly = spec.edits ? "" : "\nYou are read-only: never edit, write, or execute mutating commands.\n";
+      const fm = `---\n${stringify({ name: spec.name, description: spec.description }, { lineWidth: 0 }).trimEnd()}\n---`;
       files.push({
         path: `.github/agents/${spec.name}.md`,
-        content: `---\nname: ${spec.name}\ndescription: ${spec.description}\n---\n\n${spec.prompt}\n${readOnly}`,
+        content: `${fm}\n\n${spec.prompt}\n${readOnly}`,
         fence: "sidecar",
       });
     }

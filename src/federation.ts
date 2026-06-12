@@ -4,12 +4,13 @@
  *  review-gated; never auto-applied. */
 import { execFile } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
 import { promisify } from "node:util";
 import { stringify } from "yaml";
 import { AesopError } from "./manifest.js";
 import { parseFrontmatter } from "./registry.js";
+import { assertSafeName, safeNameOr } from "./safety.js";
 import { fileURLToPath } from "node:url";
 
 const exec = promisify(execFile);
@@ -43,11 +44,18 @@ export async function fetchRegistry(source: string, cwd: string): Promise<Fetche
     const url = source.startsWith("github:") ? `https://github.com/${source.slice("github:".length)}.git` : source;
     const cacheDir = join(cwd, ".aesop", "cache", name);
     try {
-      if (existsSync(cacheDir)) {
+      // Only pull a cache that actually came from this url — short-name collisions between two
+      // registries (github:a/x and github:b/x) must not cross-contaminate (F6).
+      const cachedRemote = existsSync(cacheDir)
+        ? await exec("git", ["-C", cacheDir, "remote", "get-url", "origin"]).then((r) => r.stdout.trim()).catch(() => "")
+        : "";
+      if (existsSync(cacheDir) && cachedRemote === url) {
         await exec("git", ["-C", cacheDir, "pull", "--ff-only", "--quiet"], { timeout: 60_000 });
       } else {
+        await rm(cacheDir, { recursive: true, force: true });
         await mkdir(dirname(cacheDir), { recursive: true });
-        await exec("git", ["clone", "--depth", "1", "--quiet", url, cacheDir], { timeout: 120_000 });
+        // `--` so a url/dir can never be read as a git option (defense-in-depth; F6).
+        await exec("git", ["clone", "--depth", "1", "--quiet", "--", url, cacheDir], { timeout: 120_000 });
       }
     } catch (e) {
       throw new AesopError(1, `registry '${name}': fetch failed (${url}): ${(e as Error).message.split("\n")[0]}`);
@@ -95,7 +103,8 @@ function normalizeAgent(name: string, content: string): string {
   const model = CLAUDE_MODEL_MAP[data.model as string] ?? (data.model as string) ?? "mid";
   const edits = tools.includes("edit") || tools.includes("bash");
   const fm = stringify({
-    name: (data.name as string) ?? name,
+    // Never vendor an unsafe frontmatter name — it would become a file path on compile (F1).
+    name: safeNameOr(data.name as string | undefined, name),
     description: (data.description as string) ?? "",
     tools: tools.length ? tools : ["read"],
     model,
@@ -144,6 +153,9 @@ function readDirRecursive(dir: string, prefix = ""): Record<string, string> {
 }
 
 export async function importPrimitive(reg: FetchedRegistry, type: ImportableType, name: string): Promise<ImportedPrimitive> {
+  // `name` becomes both a lookup path inside the registry and a write path under .aesop/vendor —
+  // reject traversal before either (F1).
+  assertSafeName(name, `${type} name`);
   const root = reg.rootDir;
   const fail = (): never => {
     throw new AesopError(1, `${type} '${name}' not found in registry '${reg.name}' (${reg.source})`);

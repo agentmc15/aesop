@@ -1,22 +1,24 @@
-# Documentation hardening ✅ (2026-06-10)
+# Security remediation ✅ (2026-06-11)
 
-User request: make documentation, how-tos, and usage guides much more robust.
+Full audit: docs/security/audit-2026-06-10.md. All 8 findings fixed + pinned by tests.
 
-## Done
-- [x] docs/guides/ — 13 task-oriented user guides (Diátaxis-style, separate from the
-      design docs in docs/01-08): index, getting-started tutorial, adopting-existing,
-      everyday-workflow, skills-and-commands, subagents, pathways, goals-and-loops,
-      mcp-hooks-permissions, registries, team-rollout, agent-driven (MCP), harnesses
-      (per-harness notes ×6), troubleshooting+FAQ
-- [x] docs/06-cli-spec.md rewritten as the complete AS-BUILT CLI reference — fixed drift
-      from implementation (--from-existing and profile new/set were spec'd but never built;
-      goal subcommands, bundle --format, list --available now documented)
-- [x] docs/07 fixed (init --refresh was documented but unimplemented)
-- [x] package.json: "prepare" script so `npm install -g github:agentmc15/aesop` builds dist
-      (installable pre-publish — getting-started depends on it)
-- [x] README: install line, getting-started pointer, full Documentation section; PLAN repo map
-- [x] Verified: all internal markdown links resolve (scripted check); 44 tests green;
-      compile --check clean; npm pack 158 files
+## Shipped
+- [x] src/safety.ts — isSafeName / assertSafeName / safeNameOr / assertWithinRepo
+- [x] F1 path-traversal write: safeNameOr in parseAgent + federation normalizeAgent;
+      assertSafeName on add-time names; assertWithinRepo backstop on every emitted path
+      (computeOutputs); schema name patterns on primitiveRef/agentRef/goalRecipe
+- [x] F2 MCP RCE: removed `agent` param from the goal_run tool
+- [x] F3 doctor: command -v passes bin as $1 (no shell interpolation); added `doctor --no-exec`
+- [x] F4 frontmatter injection: yaml.stringify({lineWidth:0}) for claude-code + copilot
+- [x] F5 unvalidated loads: single loadManifest() (validates) used by add/goal/update
+- [x] F6 git hygiene: clone with `--`; cache origin verified before pull; dup registry
+      short-names rejected in validateManifest
+- [x] F7 profile traversal: name validation in profile.ts + `aesop profile show`
+- [x] F8 env passthrough: documented at the exec site (mitigated by F2)
+- [x] 10 regression tests (src/security.test.ts); 54 total green; lint clean
+- [x] dogfood: self compile --check clean, doctor green (incl. --no-exec)
+- [x] only output change across all goldens: applyTo now library-serialized (1 line)
 
-## Remaining for the owner (unchanged)
-- npm publish when ready; live native-/goal run
+## Note
+- Schema gained name `pattern`s — security-motivated tightening of the locked v1 schema; all
+  real/seed/fixture names already conform (lowercase-kebab).

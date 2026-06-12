@@ -16,6 +16,9 @@ export interface DoctorOptions {
   cwd: string;
   fix?: boolean;
   matrix?: boolean;
+  /** Static audit only — never execute the manifest's test command or probe MCP binaries.
+   *  Use when auditing a repo whose aesop.yaml you did not author (F3). */
+  noExec?: boolean;
 }
 
 export interface Finding {
@@ -89,10 +92,11 @@ export async function runDoctor(opts: DoctorOptions): Promise<DoctorResult> {
   }
 
   // 1 — the verify loop is load-bearing (no runnable test command = unhealthy by definition).
+  // --no-exec skips actually running it, for auditing a repo whose aesop.yaml you didn't author (F3).
   const testCmd = manifest.project?.commands?.test;
   if (!testCmd || testCmd.startsWith("TODO")) {
     result.findings.push({ code: "verify-loop", message: `test command is unset ('${testCmd ?? ""}') — the agent cannot prove its work`, at: "aesop.yaml" });
-  } else {
+  } else if (!opts.noExec) {
     try {
       await exec("sh", ["-c", testCmd], { cwd: opts.cwd, timeout: 120_000 });
     } catch {
@@ -101,13 +105,16 @@ export async function runDoctor(opts: DoctorOptions): Promise<DoctorResult> {
   }
 
   // 2 — MCP health (binary resolution; a real handshake probe arrives with federation, Phase 5).
-  for (const server of manifest.primitives?.mcp ?? []) {
-    if (server.transport !== "stdio" || !server.command) continue;
-    const bin = server.command.split(" ")[0]!;
-    try {
-      await exec("sh", ["-c", `command -v ${bin}`], { cwd: opts.cwd, timeout: 10_000 });
-    } catch {
-      result.findings.push({ code: "mcp-dead", message: `MCP server '${server.name}': command '${bin}' not found on PATH`, at: "aesop.yaml" });
+  if (!opts.noExec) {
+    for (const server of manifest.primitives?.mcp ?? []) {
+      if (server.transport !== "stdio" || !server.command) continue;
+      const bin = server.command.split(" ")[0]!;
+      try {
+        // bin is passed as $1, never interpolated into the script — no shell injection (F3).
+        await exec("sh", ["-c", 'command -v "$1"', "sh", bin], { cwd: opts.cwd, timeout: 10_000 });
+      } catch {
+        result.findings.push({ code: "mcp-dead", message: `MCP server '${server.name}': command '${bin}' not found on PATH`, at: "aesop.yaml" });
+      }
     }
   }
 

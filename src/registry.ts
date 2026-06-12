@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import { AesopError } from "./manifest.js";
+import { safeNameOr } from "./safety.js";
 import type { AgentRef, Effort, PrimitiveRef, PrimitiveType, ResolvedPrimitive } from "./types.js";
 
 const REGISTRY_ROOT = fileURLToPath(new URL("../registry", import.meta.url));
@@ -138,7 +139,10 @@ export function parseAgent(resolved: ResolvedPrimitive, override?: AgentRef): Ag
   const { data, body } = parseFrontmatter(file);
   const o = typeof override === "object" ? override : undefined;
   return {
-    name: (data.name as string) ?? resolved.name,
+    // The frontmatter `name` becomes a filename in every harness — registry content cannot be
+    // trusted to keep it inside the project (F1). Fall back to the (already-safe) ref name rather
+    // than let a hostile frontmatter break compile; assertWithinRepo is the hard backstop.
+    name: safeNameOr(data.name as string | undefined, resolved.name),
     description: (data.description as string) ?? "",
     tools: o?.tools ?? ((data.tools as string[]) ?? ["read"]),
     model: o?.model ?? ((data.model as AgentSpec["model"]) ?? "mid"),

@@ -38,6 +38,9 @@ interface RunOutput {
 
 async function sh(command: string, cwd: string, env: Record<string, string>, timeout: number): Promise<RunOutput> {
   try {
+    // The loop command inherits the full environment (the default agent, `claude -p`, needs its
+    // API key). A recipe's verify/agent command therefore runs with the user's secrets in scope —
+    // only run recipes from an aesop.yaml you trust (F8). MCP callers cannot supply the command (F2).
     const { stdout, stderr } = await exec("sh", ["-c", command], {
       cwd,
       env: { ...process.env, ...env },

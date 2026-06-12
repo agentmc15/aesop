@@ -19,6 +19,9 @@ interface ProfileYaml {
 }
 
 function profilePath(name: string, projectRoot: string): string {
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(name)) {
+    throw new AesopError(2, `invalid profile name '${name}' — use lowercase letters, digits, and hyphens (F7)`);
+  }
   const custom = join(projectRoot, ".aesop", "profiles", `${name}.yaml`);
   if (existsSync(custom)) return custom;
   const builtin = join(PACKAGE_PROFILES, `${name}.yaml`);

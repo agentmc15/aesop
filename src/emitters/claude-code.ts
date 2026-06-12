@@ -1,5 +1,6 @@
 /** Claude Code emitter — CLAUDE.md (@AGENTS.md), .claude/{agents,commands,skills,settings.json}, .mcp.json.
  *  Target formats: docs/03-harness-matrix.md (update the doc first, then this file). */
+import { stringify } from "yaml";
 import { parseAgent, parseHook, refName } from "../registry.js";
 import { wrapInlineFence } from "../render.js";
 import type { CapabilityMatrix, CompileContext, EmittedFile, Emitter, GoalRecipe, Manifest } from "../types.js";
@@ -95,14 +96,12 @@ export const claudeCodeEmitter: Emitter = {
       const ref = (ctx.manifest.primitives.agents ?? []).find((r) => refName(r) === resolved.name);
       const spec = parseAgent(resolved, ref);
       const tools = [...new Set(spec.tools.flatMap((t) => TOOL_MAP[t]?.split(", ") ?? []))];
-      const fm = [
-        "---",
-        `name: ${spec.name}`,
-        `description: ${spec.description}`,
-        ...(tools.length ? [`tools: ${tools.join(", ")}`] : []),
-        `model: ${MODEL_MAP[spec.model] ?? "sonnet"}`,
-        "---",
-      ].join("\n");
+      // YAML-serialize, never interpolate: a registry-controlled description with a newline must
+      // not be able to inject extra frontmatter keys (F4).
+      const fmObj: Record<string, string> = { name: spec.name, description: spec.description };
+      if (tools.length) fmObj.tools = tools.join(", ");
+      fmObj.model = MODEL_MAP[spec.model] ?? "sonnet";
+      const fm = `---\n${stringify(fmObj, { lineWidth: 0 }).trimEnd()}\n---`;
       const readOnly = spec.edits ? "" : "\nYou are read-only: never edit, write, or execute mutating commands.\n";
       files.push({
         path: `.claude/agents/${spec.name}.md`,

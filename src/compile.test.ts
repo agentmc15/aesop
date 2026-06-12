@@ -63,7 +63,8 @@ test("GOAL LINE: compile --check exits clean (0) after compile, drift (3) after 
 test("native path scoping: copilot applyTo and cursor globs carry the path block", async () => {
   const dir = await compileFixture("full");
   const copilot = await readFile(join(dir, ".github/instructions/packages-web.instructions.md"), "utf8");
-  assert.ok(copilot.startsWith('---\napplyTo: "packages/web/**"\n---'), "applyTo frontmatter missing");
+  // applyTo is YAML-serialized (F4): this glob is safe unquoted; globs with a leading * get quoted.
+  assert.ok(copilot.startsWith("---\napplyTo: packages/web/**\n---"), "applyTo frontmatter missing");
   assert.ok(copilot.includes("React function components only"));
   const cursor = await readFile(join(dir, ".cursor/rules/scoped-packages-web.mdc"), "utf8");
   assert.ok(cursor.includes("globs: packages/web/**"), "globs frontmatter missing");

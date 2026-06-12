@@ -11,6 +11,7 @@ import { vscodeEmitter } from "../emitters/vscode.js";
 import { AesopError, parseManifest } from "../manifest.js";
 import { applyProfile, loadProfile } from "../profile.js";
 import { resolvePrimitive, sha256 } from "../registry.js";
+import { assertWithinRepo } from "../safety.js";
 import {
   mergeWithExisting,
   renderAgentsMd,
@@ -116,6 +117,9 @@ export async function computeOutputs(opts: CompileOptions): Promise<ComputedOutp
   // One path, one content — a collision between emitters is a bug, not a merge.
   const byPath = new Map<string, EmittedFile>();
   for (const f of emitted) {
+    // Containment backstop: no emitted path may escape the project, no matter where its name
+    // came from (registry frontmatter, a hand-edited manifest, a future emitter).
+    assertWithinRepo(opts.cwd, f.path, "emitted file");
     const prev = byPath.get(f.path);
     if (prev && prev.content !== f.content) {
       throw new AesopError(1, `emitter collision on ${f.path} (two harnesses produced different content)`);

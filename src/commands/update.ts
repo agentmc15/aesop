@@ -3,7 +3,6 @@
  *  so the change lands in every harness's native files for review in one diff. */
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parse } from "yaml";
 import { runCompile } from "./compile.js";
 import {
   fetchRegistry,
@@ -13,7 +12,7 @@ import {
   writeVendored,
   PROVENANCE_MARKER,
 } from "../federation.js";
-import { serializeManifest, validateManifest, AesopError } from "../manifest.js";
+import { loadManifest, serializeManifest, validateManifest, AesopError } from "../manifest.js";
 import type { Manifest } from "../types.js";
 
 export interface UpdateEntry {
@@ -49,7 +48,7 @@ export async function runUpdate(opts: { cwd: string; apply?: boolean }): Promise
 
   let manifestDirty = false;
   const manifestPath = join(opts.cwd, "aesop.yaml");
-  const manifest = parse(await readFile(manifestPath, "utf8")) as Manifest;
+  const manifest = await loadManifest(opts.cwd);
 
   for (const meta of metas) {
     const reg = await fetchRegistry(meta.source, opts.cwd);

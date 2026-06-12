@@ -1,6 +1,8 @@
 /** Manifest load / validate / serialize. The schema is the contract; this module enforces it. */
 import { readFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
+import { join } from "node:path";
 import { parse, stringify } from "yaml";
 import type { Manifest } from "./types.js";
 
@@ -41,7 +43,24 @@ export function validateManifest(data: unknown): ValidationResult {
   if (primary && judge && primary === judge) {
     errors.push("/project/models judge.family must differ from primary.family (the maker must not grade its own work)");
   }
+  // Two registries that resolve to the same short name share one .aesop/vendor + cache dir (F6).
+  const shortNames = (m?.registries ?? []).map((r) =>
+    r === "builtin" ? "builtin" : ((r.replace(/\/+$/, "").split("/").pop() ?? r).replace(/\.git$/, ""))
+  );
+  const dups = [...new Set(shortNames.filter((n, i) => shortNames.indexOf(n) !== i))];
+  if (dups.length) {
+    errors.push(`/registries duplicate short name(s): ${dups.join(", ")} — they would share a vendor directory; rename or remove one`);
+  }
   return { valid: errors.length === 0, errors };
+}
+
+/** Read + validate aesop.yaml. The one loader every mutating/fetching command must use, so the
+ *  schema (incl. the registry pattern) is a real control on those paths, not just on compile (F5). */
+export async function loadManifest(cwd: string): Promise<Manifest> {
+  const raw = await readFile(join(cwd, "aesop.yaml"), "utf8").catch(() => {
+    throw new AesopError(1, `no aesop.yaml in ${cwd} — run \`aesop init\` first`);
+  });
+  return parseManifest(raw);
 }
 
 export function serializeManifest(manifest: Manifest, generatedNote: string): string {

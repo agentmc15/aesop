@@ -4,7 +4,6 @@
 import { existsSync, readdirSync } from "node:fs";
 import { readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parse } from "yaml";
 import { runCompile } from "./compile.js";
 import {
   fetchRegistry,
@@ -14,18 +13,11 @@ import {
   PROVENANCE_MARKER,
   type ImportableType,
 } from "../federation.js";
-import { serializeManifest, validateManifest, AesopError } from "../manifest.js";
+import { loadManifest, serializeManifest, validateManifest, AesopError } from "../manifest.js";
 import { refName } from "../registry.js";
 import type { AgentRef, Manifest, PrimitiveRef } from "../types.js";
 
 const ADDABLE: ImportableType[] = ["agent", "skill", "command", "instructions"];
-
-async function loadManifest(cwd: string): Promise<Manifest> {
-  const raw = await readFile(join(cwd, "aesop.yaml"), "utf8").catch(() => {
-    throw new AesopError(1, `no aesop.yaml in ${cwd} — run \`aesop init\` first`);
-  });
-  return parse(raw) as Manifest;
-}
 
 async function saveManifest(cwd: string, manifest: Manifest, note: string): Promise<void> {
   const { valid, errors } = validateManifest(manifest);

@@ -33,7 +33,10 @@ export const TOOLS = [
   { name: "list", description: "List installed primitives; available=true browses every declared registry.", inputSchema: obj({ ...cwdProp, type: { type: "string" }, available: { type: "boolean" } }) },
   { name: "lessons", description: "Record a mistake→rule lesson; promote=true also lifts it into the instruction files everywhere.", inputSchema: obj({ ...cwdProp, text: { type: "string" }, promote: { type: "boolean" } }, ["text"]) },
   { name: "goal_list", description: "List goal recipes (goal, verify command, hard stops).", inputSchema: obj({ ...cwdProp }) },
-  { name: "goal_run", description: "Run a goal recipe via the portable Ralph loop until verified or a hard stop triggers.", inputSchema: obj({ ...cwdProp, name: { type: "string" }, agent: { type: "string" } }, ["name"]) },
+  // Note: no `agent` parameter — an MCP caller (which may be a prompt-injected agent) must not be
+  // able to choose the shell command Aesop runs. goal_run only executes the recipe's vetted,
+  // compiled agent_command (F2).
+  { name: "goal_run", description: "Run a goal recipe via the portable Ralph loop until verified or a hard stop triggers.", inputSchema: obj({ ...cwdProp, name: { type: "string" } }, ["name"]) },
 ] as const;
 
 async function dispatch(name: string, args: Record<string, unknown>): Promise<unknown> {
@@ -54,7 +57,7 @@ async function dispatch(name: string, args: Record<string, unknown>): Promise<un
     case "goal_list":
       return goalList(cwd);
     case "goal_run":
-      return goalRun({ cwd, name: args.name as string, ...(args.agent ? { agent: args.agent as string } : {}) });
+      return goalRun({ cwd, name: args.name as string }); // agent command is fixed by the recipe, not the caller (F2)
     default:
       throw new AesopError(1, `unknown tool '${name}'`);
   }

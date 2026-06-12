@@ -67,6 +67,7 @@ async function main(): Promise<number> {
       "write-back": { type: "boolean" },
       fix: { type: "boolean" },
       matrix: { type: "boolean" },
+      "no-exec": { type: "boolean" },
       promote: { type: "boolean" },
       apply: { type: "boolean" },
       available: { type: "boolean" },
@@ -135,6 +136,7 @@ async function main(): Promise<number> {
         cwd: values.cwd ?? process.cwd(),
         ...(values.fix ? { fix: true } : {}),
         ...(values.matrix ? { matrix: true } : {}),
+        ...(values["no-exec"] ? { noExec: true } : {}),
       });
       console.log(values.json ? JSON.stringify(result, null, 2) : doctorSummary(result));
       return result.findings.length ? 3 : 0;
@@ -260,6 +262,10 @@ async function main(): Promise<number> {
         return 0;
       }
       if (sub === "show" && positionals[2]) {
+        if (!/^[a-z0-9][a-z0-9-]*$/.test(positionals[2])) {
+          console.error(`invalid profile name '${positionals[2]}' — use lowercase letters, digits, and hyphens`);
+          return 1;
+        }
         const dir = fileURLToPath(new URL("../profiles", import.meta.url));
         console.log(readFileSync(join(dir, `${positionals[2]}.yaml`), "utf8"));
         return 0;

@@ -2,20 +2,12 @@
  *  Native /goal where the harness has one; the Ralph runner everywhere. */
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parse } from "yaml";
 import { runCompile } from "./compile.js";
 import { runRalph, type RalphResult } from "../loops/ralph.js";
-import { serializeManifest, validateManifest, AesopError } from "../manifest.js";
+import { loadManifest, serializeManifest, validateManifest, AesopError } from "../manifest.js";
 import { loadProfile } from "../profile.js";
 import { ralphPrompt, renderGoalDoc } from "../render.js";
 import type { GoalRecipe, Manifest } from "../types.js";
-
-async function loadManifest(cwd: string): Promise<Manifest> {
-  const raw = await readFile(join(cwd, "aesop.yaml"), "utf8").catch(() => {
-    throw new AesopError(1, `no aesop.yaml in ${cwd} — run \`aesop init\` first`);
-  });
-  return parse(raw) as Manifest;
-}
 
 function findRecipe(manifest: Manifest, name: string): GoalRecipe {
   const recipe = (manifest.primitives.loops ?? []).find((l) => l.name === name);

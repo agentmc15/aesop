@@ -120,22 +120,22 @@
     },
     "primitiveRef": {
       "oneOf": [
-        { "type": "string", "description": "name or name@registry" },
+        { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*(@[a-z0-9][a-z0-9._-]*)?$", "description": "name or name@registry — a path-safe identifier, never a path" },
         {
           "type": "object",
           "required": ["name"],
-          "properties": { "name": { "type": "string" }, "from": { "type": "string" } }
+          "properties": { "name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }, "from": { "type": "string" } }
         }
       ]
     },
     "agentRef": {
       "oneOf": [
-        { "type": "string" },
+        { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*(@[a-z0-9][a-z0-9._-]*)?$" },
         {
           "type": "object",
           "required": ["name"],
           "properties": {
-            "name": { "type": "string" },
+            "name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
             "from": { "type": "string" },
             "model": { "enum": ["strong", "mid", "cheap"] },
             "effort": { "enum": ["xhigh", "high", "medium", "fast"] },
@@ -161,7 +161,7 @@
       "type": "object",
       "required": ["name", "goal", "verify", "stops"],
       "properties": {
-        "name": { "type": "string" },
+        "name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "path-safe identifier — becomes a filename under .aesop/goals/" },
         "goal": { "type": "string", "description": "The measurable end state." },
         "verify": { "type": "string", "description": "Shell command whose exit code proves the goal. Required — no verify, no recipe." },
         "plan_gate": { "type": "boolean", "default": true },

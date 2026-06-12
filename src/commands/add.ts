@@ -168,6 +168,7 @@ export async function runList(opts: { cwd: string; type?: string; available?: bo
         if (!existsSync(abs)) continue;
         for (const entry of readdirSync(abs).sort()) {
           if (entry.startsWith("_") || entry.startsWith(".")) continue;
+          if (/^readme(\.|$)/i.test(entry)) continue; // docs, not an installable primitive
           const name = strip ? entry.replace(strip, "") : entry;
           if (strip && name === entry && !entry.includes(".")) continue; // dir listing for file types
           lines.push(`${type.padEnd(12)} ${name}  (${reg.name})`);

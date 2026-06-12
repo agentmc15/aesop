@@ -153,5 +153,6 @@ test("add: unknown name fails readably; list --available spans registries", asyn
   assert.ok(available.some((l) => l.includes("code-reviewer") && l.includes("ecc")));
   assert.ok(available.some((l) => l.includes("react") && l.includes("awesome-copilot")));
   assert.ok(available.some((l) => l.includes("verify-loop") && l.includes("builtin")));
+  assert.ok(!available.some((l) => /readme/i.test(l)), "README files are docs, not installable primitives");
   await rm(dir, { recursive: true, force: true });
 });

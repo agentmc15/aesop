@@ -1,0 +1,25 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "aesop: test",
+      "type": "shell",
+      "command": "npm test",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "aesop: build",
+      "type": "shell",
+      "command": "npm run build",
+      "group": "build"
+    },
+    {
+      "label": "aesop: lint",
+      "type": "shell",
+      "command": "npm run lint"
+    }
+  ]
+}

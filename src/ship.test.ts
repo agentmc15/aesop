@@ -117,7 +117,7 @@ test("GOAL LINE (agent-native): MCP server answers initialize, tools/list, and a
 test("npm pack ships exactly the runtime surface (dist, registry, profiles, schemas)", async () => {
   const { stdout } = await exec("npm", ["pack", "--dry-run", "--json"], { cwd: packageRoot, timeout: 60_000 });
   const [info] = JSON.parse(stdout) as [{ files: { path: string }[]; name: string; version: string }];
-  assert.equal(info.name, "aesop");
+  assert.equal(info.name, "@agentmc15/aesop");
   const paths = info.files.map((f) => f.path);
   assert.ok(paths.includes("dist/index.js"));
   assert.ok(paths.includes("registry/instructions/AGENTS.template.md"));
@@ -126,4 +126,6 @@ test("npm pack ships exactly the runtime surface (dist, registry, profiles, sche
   assert.ok(paths.some((p) => p.startsWith("registry/skills/verify-loop/")));
   assert.ok(!paths.some((p) => p.startsWith("fixtures/")), "fixtures must not ship");
   assert.ok(!paths.some((p) => p.startsWith("src/")), "source must not ship");
+  assert.ok(!paths.some((p) => p.includes(".test.")), "test files must not ship");
+  assert.ok(!paths.some((p) => p.endsWith(".js.map")), "source maps must not ship");
 });

@@ -54,7 +54,7 @@ what a human should click. Aesop is agent-native infrastructure *for the agents 
 ## 1. What Aesop is (and is not)
 
 **Aesop is:**
-- A **CLI application** (`npx aesop init` in any repo) plus a **registry** of proven primitives,
+- A **CLI application** (`npx @agentmc15/aesop init` in any repo) plus a **registry** of proven primitives,
   plus a set of **emitters** that write each harness's native files.
 - **Declarative.** One manifest — `aesop.yaml` — is the single source of truth in the user's
   project. Everything under `.claude/`, `.github/`, `.cursor/`, `.codex/`, `GEMINI.md`, `AGENTS.md`
@@ -185,7 +185,7 @@ Full parameter semantics: [`docs/05-pathways.md`](docs/05-pathways.md).
 
 ## 5. The CLI — command surface
 
-The application is a single Node/TypeScript CLI (`npx aesop`, no install). Full spec with flags,
+The application is a single Node/TypeScript CLI (`npx @agentmc15/aesop`, no install). Full spec with flags,
 exit codes, and JSON output modes: [`docs/06-cli-spec.md`](docs/06-cli-spec.md).
 
 | Command | What it does |

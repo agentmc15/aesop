@@ -91,6 +91,6 @@ Static + dynamic audit, exit-coded for CI:
 
 ## 7. Runtime choices
 
-TypeScript/Node ≥20, distributed via `npx aesop` (zero install). Library-first: `src/` exposes
+TypeScript/Node ≥20, distributed via `npx @agentmc15/aesop` (zero install). Library-first: `src/` exposes
 the compiler as an API; the CLI and the MCP server (`aesop mcp serve`) are thin shells over it.
 No daemon, no network calls except registry fetch and `update`.

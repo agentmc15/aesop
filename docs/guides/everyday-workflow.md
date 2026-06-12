@@ -77,8 +77,8 @@ A prompt change is a code change. `update` never applies anything by itself.
 ## CI: make the loop self-enforcing
 
 ```yaml
-- run: npx aesop compile --check    # drift inside fences fails the build (exit 3)
-- run: npx aesop doctor             # an unhealthy environment fails the build (exit 3)
+- run: npx @agentmc15/aesop compile --check   # drift inside fences fails the build (exit 3)
+- run: npx @agentmc15/aesop doctor            # an unhealthy environment fails the build (exit 3)
 ```
 
 With these two lines, "the agent config is wrong" becomes a red build instead of a mystery

@@ -8,7 +8,7 @@ GitHub Copilot (CLI + VS Code), Cursor, Antigravity, VS Code.
 > Aesop tells your project's story to every agent, in each agent's native tongue.
 
 ```bash
-npm install -g github:agentmc15/aesop   # (after the npm publish: just `npx aesop`)
+npm install -g github:agentmc15/aesop   # (after the npm publish: `npm i -g @agentmc15/aesop`)
 
 aesop init            # detect your project, answer a short interview → aesop.yaml
 aesop compile         # emit native config for every harness you selected

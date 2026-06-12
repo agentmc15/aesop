@@ -10,7 +10,7 @@ permissions, and a runnable goal loop — in about ten minutes.
 npm install -g github:agentmc15/aesop
 
 # after publish:
-npx aesop --help
+npx @agentmc15/aesop --help
 ```
 
 Requires Node ≥ 20. Check it works:
@@ -149,8 +149,8 @@ Two ways to run it:
 Two lines make the environment self-enforcing:
 
 ```yaml
-- run: npx aesop compile --check   # exit 3 if any generated file drifted
-- run: npx aesop doctor            # exit 3 if the environment is unhealthy
+- run: npx @agentmc15/aesop compile --check   # exit 3 if any generated file drifted
+- run: npx @agentmc15/aesop doctor            # exit 3 if the environment is unhealthy
 ```
 
 ## Where to next

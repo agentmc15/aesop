@@ -10,8 +10,8 @@ the working environment with no Aesop knowledge at all: `CLAUDE.md` works in the
 `.cursor/rules` in their Cursor. Add the two CI lines so nobody forks the truth by hand:
 
 ```yaml
-- run: npx aesop compile --check    # drift inside fences fails the build
-- run: npx aesop doctor             # unhealthy environment fails the build
+- run: npx @agentmc15/aesop compile --check   # drift inside fences fails the build
+- run: npx @agentmc15/aesop doctor            # unhealthy environment fails the build
 ```
 
 ## Level 2 — bundle: one-command install into *other* repos

@@ -52,7 +52,7 @@ The one harness with **native path-scoped instructions** — Aesop exploits it.
 | instructions | `.github/copilot-instructions.md` (path blocks deliberately excluded…) |
 | path-scoped rules | …because they land natively in `.github/instructions/<slug>.instructions.md` with `applyTo` |
 | commands | `.github/prompts/<name>.prompt.md` |
-| agents | `.github/agents/*.md` |
+| agents | `.github/agents/*.agent.md` |
 | skills | `.github/skills/` |
 | MCP | `.vscode/mcp.json` |
 

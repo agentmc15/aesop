@@ -1,5 +1,5 @@
 /** GitHub Copilot emitter (CLI + VS Code agent mode) — .github/{copilot-instructions.md,
- *  instructions/*.instructions.md (applyTo), prompts/*.prompt.md, agents/*.md, skills/}, .vscode/mcp.json.
+ *  instructions/*.instructions.md (applyTo), prompts/*.prompt.md, agents/*.agent.md, skills/}, .vscode/mcp.json.
  *  Target formats: docs/03-harness-matrix.md (update the doc first, then this file). */
 import { stringify } from "yaml";
 import { parseAgent, refName } from "../registry.js";
@@ -46,7 +46,7 @@ export const copilotEmitter: Emitter = {
       const readOnly = spec.edits ? "" : "\nYou are read-only: never edit, write, or execute mutating commands.\n";
       const fm = `---\n${stringify({ name: spec.name, description: spec.description }, { lineWidth: 0 }).trimEnd()}\n---`;
       files.push({
-        path: `.github/agents/${spec.name}.md`,
+        path: `.github/agents/${spec.name}.agent.md`,
         content: `${fm}\n\n${spec.prompt}\n${readOnly}`,
         fence: "sidecar",
       });

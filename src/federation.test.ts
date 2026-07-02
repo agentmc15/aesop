@@ -60,7 +60,7 @@ test("GOAL LINE: add agent from ecc + add instructions from awesome-copilot → 
   assert.ok(claudeAgent.includes("tools: Read, Grep, Glob"));
   const codexAgent = await readFile(join(dir, ".codex/agents/code-reviewer.toml"), "utf8");
   assert.ok(codexAgent.includes('read_only = true'));
-  const copilotAgent = await readFile(join(dir, ".github/agents/code-reviewer.md"), "utf8");
+  const copilotAgent = await readFile(join(dir, ".github/agents/code-reviewer.agent.md"), "utf8");
   assert.ok(copilotAgent.includes("name: code-reviewer"));
   const role = await readFile(join(dir, ".aesop/roles/code-reviewer.md"), "utf8"); // cursor + antigravity fallback
   assert.ok(role.includes("READ-ONLY"));

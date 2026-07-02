@@ -43,7 +43,7 @@ invocation matches on it.
 |---|---|---|
 | Claude Code | `.claude/agents/<name>.md` — YAML frontmatter: `name`, `description`, `tools`, `model` | yes |
 | Codex | `.codex/agents/<name>.toml` | yes |
-| Copilot | `.github/agents/<name>.md` (awesome-copilot "agents" category; MCP-integrated) | partial |
+| Copilot | `.github/agents/<name>.agent.md` (awesome-copilot "agents" category; MCP-integrated) | partial |
 | Cursor / Antigravity / VS Code | no first-class subagents → role prompt files in `.aesop/roles/<name>.md` (one session/tab per role; identical bytes across emitters) | fallback |
 
 Canonical roles in [`../registry/agents/`](../registry/agents/): explorer, implementer, critic,

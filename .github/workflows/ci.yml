@@ -6,15 +6,28 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: [20, 22]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ matrix.node }}
       - run: npm ci
       - run: npm test
       # the environment is compiled output — drift fails the build
       - run: node dist/index.js compile --check
-      # and it has to be healthy, by aesop's own definition
+      # and it has to be healthy, by aesop's own definition (doctor shells out to
+      # POSIX `command -v`, so the exec checks run on the Linux legs only)
       - run: node dist/index.js doctor
+        if: runner.os == 'Linux'
+      # dependency advisories fail one leg loudly instead of rotting silently
+      - run: npm audit --audit-level=moderate
+        if: runner.os == 'Linux' && matrix.node == 22
+      # coverage visibility — node:test's built-in reporter, no new dependency
+      - run: cd dist && node --test --experimental-test-coverage
+        if: runner.os == 'Linux' && matrix.node == 22

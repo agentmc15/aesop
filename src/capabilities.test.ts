@@ -32,8 +32,8 @@ const MATRIX: Record<string, { native: PrimitiveType[]; fallback: PrimitiveType[
     goalMode: "ralph",
   },
   antigravity: {
-    native: ["instructions", "state", "loop"],
-    fallback: ["skill", "agent", "command", "mcp", "hook", "permissions"],
+    native: ["instructions", "skill", "state", "loop"],
+    fallback: ["agent", "command", "mcp", "hook", "permissions"],
     goalMode: "scheduled",
   },
   vscode: {

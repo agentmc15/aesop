@@ -28,7 +28,9 @@ export interface FetchedRegistry {
 
 export function registryName(source: string): string {
   if (source === "builtin") return "builtin";
-  const tail = source.replace(/\/+$/, "").split("/").pop() ?? source;
+  // Split on both separators: a `path:C:\repos\ecc` registry on Windows must yield 'ecc',
+  // not a full path (which is also unusable as a vendor/cache directory name).
+  const tail = source.replace(/[\\/]+$/, "").split(/[\\/]/).pop() ?? source;
   return tail.replace(/\.git$/, "");
 }
 

@@ -115,7 +115,8 @@ test("GOAL LINE (agent-native): MCP server answers initialize, tools/list, and a
 });
 
 test("npm pack ships exactly the runtime surface (dist, registry, profiles, schemas)", async () => {
-  const { stdout } = await exec("npm", ["pack", "--dry-run", "--json"], { cwd: packageRoot, timeout: 60_000 });
+  // shell:true lets Windows resolve npm.cmd; fixed args, nothing user-controlled (no injection).
+  const { stdout } = await exec("npm", ["pack", "--dry-run", "--json"], { cwd: packageRoot, timeout: 60_000, shell: process.platform === "win32" });
   const [info] = JSON.parse(stdout) as [{ files: { path: string }[]; name: string; version: string }];
   assert.equal(info.name, "@agentmc15/aesop");
   const paths = info.files.map((f) => f.path);

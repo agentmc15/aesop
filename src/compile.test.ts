@@ -14,7 +14,8 @@ async function walk(dir: string, root = dir): Promise<string[]> {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) out.push(...(await walk(full, root)));
-    else out.push(relative(root, full));
+    // Normalize to '/' so the golden comparison (and the lock.json exclusion) works on Windows.
+    else out.push(relative(root, full).replaceAll("\\", "/"));
   }
   return out.sort();
 }

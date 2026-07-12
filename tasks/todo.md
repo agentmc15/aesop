@@ -1,35 +1,28 @@
-# Slice 2: quick wins + robustness (2026-07-12)
+# Slice 3: Windows support — issue #4 (2026-07-12)
 
-From tasks/improvement-recommendations.md §1–2. Deferred by choice: release automation
-(needs an NPM_TOKEN decision from the human) and the seventh emitter (post-1.0 tier).
+Goal line (from #4): all 63 tests green on windows-latest node 20+22, continue-on-error
+removed so Windows gates merges. Verify loop = CI (no local Windows box).
 
-## Code fixes
-- [x] render.ts:68 bare Error → AesopError → verify: render.test.ts pins the message
-- [x] resolveAgentSpec() helper in emitters/shared.ts; use in claude-code, codex,
-      copilot, rolePromptFiles → verify: full suite green, goldens unchanged
+## Product fixes
+- [x] federation.ts registryName(): split on / AND \ so `path:C:\…\ecc` → 'ecc'
+- [x] manifest.ts F6 short-name collision rule: same cross-separator split
+- [x] doctor.ts test-command probe: shell:true (sh -c / cmd.exe — manifest owner's own
+      command, F3 posture unchanged)
+- [x] doctor.ts binary probe: `where <bin>` via execFile on win32 (argv-only, no shell)
 
-## Tests
-- [x] render.test.ts — fence contract unit tests: wrapInlineFence hash, fenceDrift
-      (clean / tampered / no fence), mergeWithExisting (no file, fence replace with
-      content above AND below preserved, unmanaged file → marker, empty file)
-      → verify: npm test
+## Test-portability fixes
+- [x] compile.test.ts walk(): normalize \ → / before golden comparison
+- [x] security.test.ts F1: resolve()-based expectation instead of hardcoded POSIX string
+- [x] security.test.ts F1b/F3b/F4: single-quoted YAML scalars for interpolated temp
+      paths (double-quoted style treats \U as an escape → BAD_DQ_ESCAPE on Windows)
+- [x] ship.test.ts: npm pack via shell:true on win32 (npm.cmd resolution)
 
-## Dependencies & CI
-- [x] npm audit fix (esbuild dev-dep, GHSA-g7r4-m6w7-qqqr) → verify: audit clean, tests green
-- [x] .github/dependabot.yml (npm + github-actions, weekly)
-- [x] CI matrix: node 20/22 × ubuntu/macos/windows; doctor stays ubuntu-only (posix
-      `command -v` checks); audit + coverage steps on one leg → verify: CI green on PR;
-      iterate on any windows/macos failure rather than dropping the leg silently
-- [x] .gitattributes `* -text` so goldens survive Windows checkout byte-for-byte
-
-## Docs & contribution scaffolding
-- [x] registry/commands/README.md + registry/hooks/README.md (parallel to agents/skills)
-- [x] CONTRIBUTING.md — distill the load-bearing rules: locked types/schema, doc-first
-      matrix, deliberate golden regeneration, no AI trailers, phase workflow
-- [x] .github/ISSUE_TEMPLATE/{bug_report,feature_request}.md + pull_request_template.md
-- [x] .github/workflows/matrix-freshness.yml — monthly cron + dispatch; opens an issue
-      when docs/03's verified date exceeds 90 days
-- [x] CHANGELOG Unreleased additions
+## CI
+- [x] remove continue-on-error from windows legs (they gate now)
+- [x] doctor step runs on all OSes (probes are platform-aware)
+- [ ] PR CI green on all 6 legs — THE goal line; iterate here if windows disagrees
 
 ## Wrap-up
-- [x] npm test + lint + self compile --check + doctor green; push; PR; CI green; merge
+- [x] local: 63/63, lint clean, self compile --check clean, doctor healthy
+- [x] CHANGELOG Fixed entry
+- [ ] merge; close #4

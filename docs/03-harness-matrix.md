@@ -30,7 +30,7 @@ in context; body loads on trigger; bundled files load on demand.
 | Claude Code | `.claude/skills/<name>/SKILL.md` | implicit trigger by description; also `/skill` |
 | Codex | `.codex/skills/<name>/SKILL.md` | same format |
 | Copilot | `.github/skills/<name>/` (awesome-copilot category: "self-contained folders with instructions and bundled assets") | |
-| Antigravity | native support, but the on-disk location varies by version — **fallback**: referenced from AGENTS.md until pinned here | |
+| Antigravity | `.agents/skills/<name>/SKILL.md` (workspace root) — pinned July 2026: current releases standardized on `.agents/` and still read the legacy `.agent/skills/`; global skills live in `~/.gemini/config/skills/` (not emitted — repo files only) | native |
 | Cursor | no native skills → emitted as agent-requested rules (`.cursor/rules/skill-<name>.mdc`, `description` trigger) | fallback, flagged in capabilities |
 | VS Code | via the `copilot` harness | |
 
@@ -133,7 +133,7 @@ to either side without the other fails CI — the doc and the code cannot drift 
 | codex | instructions, skill, agent, command, mcp, permissions, loop, state | hook | native |
 | copilot | instructions, skill, agent, command, mcp, state | hook, permissions, loop | ralph |
 | cursor | instructions, mcp, state | skill, agent, command, hook, permissions, loop | ralph |
-| antigravity | instructions, state, loop | skill, agent, command, mcp, hook, permissions | scheduled |
+| antigravity | instructions, skill, state, loop | agent, command, mcp, hook, permissions | scheduled |
 | vscode | mcp, state | instructions, skill, agent, command, hook, permissions, loop | ralph |
 
 Notes pinned in Phase 3: Antigravity gets no `GEMINI.md` (it reads the core-emitted `AGENTS.md`,

@@ -1,5 +1,5 @@
 /** Pathway profiles: load the YAML calibrations, apply them to a manifest at compile time. */
-import { readFileSync, existsSync, readdirSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
@@ -41,6 +41,31 @@ export function listProfiles(projectRoot: string): { name: string; source: "buil
     }
   }
   return out;
+}
+
+/** Raw YAML text of a profile (custom wins over builtin) — for `aesop profile show`. */
+export function readProfileSource(name: string, projectRoot: string): string {
+  return readFileSync(profilePath(name, projectRoot), "utf8");
+}
+
+/** `aesop profile new <name> --from <base>`: fork a calibration into .aesop/profiles/<name>.yaml.
+ *  Textual copy so the base profile's comments survive; only the `profile:` line is rewritten. */
+export function createProfile(name: string, from: string, projectRoot: string): string {
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(name)) {
+    throw new AesopError(2, `invalid profile name '${name}' — use lowercase letters, digits, and hyphens (F7)`);
+  }
+  const target = join(projectRoot, ".aesop", "profiles", `${name}.yaml`);
+  if (existsSync(target)) {
+    throw new AesopError(1, `profile '${name}' already exists at ${target} — edit it, or pick another name`);
+  }
+  const source = readFileSync(profilePath(from, projectRoot), "utf8");
+  const body = /^profile:.*$/m.test(source)
+    ? source.replace(/^profile:.*$/m, `profile: ${name}`)
+    : `profile: ${name}\n${source}`;
+  const header = `# ${name} — forked from '${from}' by \`aesop profile new\`. Tune, then reference it\n# from aesop.yaml (pathway.profile: ${name}) and run: aesop compile\n`;
+  mkdirSync(join(projectRoot, ".aesop", "profiles"), { recursive: true });
+  writeFileSync(target, header + body, "utf8");
+  return target;
 }
 
 export function loadProfile(name: string, projectRoot: string, overrides?: Record<string, unknown>): Profile {

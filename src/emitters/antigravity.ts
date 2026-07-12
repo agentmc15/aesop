@@ -1,5 +1,6 @@
-/** Antigravity emitter — GUARDRAILS.md + fallback roles/prompts. Antigravity reads AGENTS.md
- *  natively and it wins precedence over GEMINI.md, so no redundant GEMINI.md is emitted.
+/** Antigravity emitter — GUARDRAILS.md + native skills (.agents/skills/) + fallback
+ *  roles/prompts. Antigravity reads AGENTS.md natively and it wins precedence over GEMINI.md,
+ *  so no redundant GEMINI.md is emitted.
  *  Target formats: docs/03-harness-matrix.md (update the doc first, then this file). */
 import { wrapInlineFence } from "../render.js";
 import { portablePromptFiles, rolePromptFiles } from "./shared.js";
@@ -49,11 +50,19 @@ export const antigravityEmitter: Emitter = {
   harness: "antigravity",
 
   emit(ctx: CompileContext): EmittedFile[] {
-    return [
+    const files: EmittedFile[] = [
       { path: "GUARDRAILS.md", content: wrapInlineFence(guardrailsMd(ctx)), fence: "inline" },
       ...rolePromptFiles(ctx),
       ...portablePromptFiles(ctx),
     ];
+    // Native skills, pinned July 2026: workspace .agents/skills/<name>/SKILL.md (same converged
+    // folder format as Claude Code / Codex; legacy .agent/skills/ is still read but not emitted).
+    for (const resolved of ctx.primitives.filter((p) => p.type === "skill")) {
+      for (const [rel, content] of Object.entries(resolved.files)) {
+        files.push({ path: `.agents/skills/${resolved.name}/${rel}`, content, fence: "sidecar" });
+      }
+    }
+    return files;
   },
 
   importExisting(rootFiles: Record<string, string>): Partial<Manifest> {
@@ -64,9 +73,8 @@ export const antigravityEmitter: Emitter = {
 
   capabilities(): CapabilityMatrix {
     return {
-      native: ["instructions", "state", "loop"],
+      native: ["instructions", "skill", "state", "loop"],
       fallback: {
-        skill: "native skill location varies by version — referenced from AGENTS.md until the matrix pins it",
         agent: "no first-class subagents — role prompts in .aesop/roles/ (Manager surface runs them)",
         command: "no native prompt registry — portable prompts in .aesop/prompts/",
         mcp: "MCP is configured in app settings, not a repo file — not emitted",

@@ -73,8 +73,10 @@ state:
 ```
 
 Notes:
-- Anything **detected** can be re-detected by re-running `aesop init --force` in a scratch copy
-  and diffing (a first-class `--refresh` flag is future work).
+- Anything **detected** can be re-detected with `aesop init --refresh`: it diffs fresh detection
+  against the manifest's detected fields (commands, stack, monorepo) and exits 3 on drift;
+  `--refresh --write` applies it. Detection finding nothing is never treated as a removal, so a
+  hand-tuned command survives refresh.
 - Anything **interviewed** is the human's: sync never overwrites `invariants`, `models`,
   `review_bandwidth` without `--write-back` confirmation.
 - `models.judge.family ≠ models.primary.family` is schema-enforced (the different-family-judge

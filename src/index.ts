@@ -3,12 +3,9 @@
  * aesop — environment compiler for AI coding agents.
  * Library-first: commands live in src/commands/ and throw AesopError; only this shell exits.
  */
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { AesopError } from "./manifest.js";
-import { runInit, initSummary } from "./commands/init.js";
+import { runInit, initSummary, runRefresh, refreshSummary } from "./commands/init.js";
 import { runCompile, compileSummary } from "./commands/compile.js";
 import { runSync, syncSummary } from "./commands/sync.js";
 import { runDoctor, doctorSummary } from "./commands/doctor.js";
@@ -19,10 +16,10 @@ import { runUpdate, updateSummary } from "./commands/update.js";
 import { goalList, goalNew, goalRun, goalRunSummary, goalShow } from "./commands/goal.js";
 import { runBundle, bundleSummary, type BundleFormat } from "./commands/bundle.js";
 import { serveMcp } from "./commands/mcp.js";
-import { listProfiles } from "./profile.js";
+import { createProfile, listProfiles, readProfileSource } from "./profile.js";
 
 const COMMANDS: Record<string, { phase: number; summary: string }> = {
-  init: { phase: 1, summary: "detect project → interview → write aesop.yaml (--yes, --force, --harness a,b, --pathway p)" },
+  init: { phase: 1, summary: "detect project → interview → write aesop.yaml (--yes, --force, --harness a,b, --pathway p); --refresh re-detects and diffs" },
   compile: { phase: 2, summary: "manifest → native files for every selected harness (--check for CI)" },
   sync: { phase: 4, summary: "detect drift in fenced regions; --write-back lifts edits into the manifest" },
   doctor: { phase: 4, summary: "audit the environment: verify loop, MCP health, stops, secrets, budgets" },
@@ -33,7 +30,7 @@ const COMMANDS: Record<string, { phase: number; summary: string }> = {
   bundle: { phase: 7, summary: "package the environment as a claude-plugin / copilot-plugin / tarball" },
   update: { phase: 5, summary: "diff registry updates for review; --apply after review only" },
   lessons: { phase: 4, summary: "append to tasks/lessons.md; --promote lifts a lesson into a rule" },
-  profile: { phase: 2, summary: "list/show/new/set pathway profiles" },
+  profile: { phase: 2, summary: "list/show pathway profiles; new <name> --from <base> forks one" },
   eject: { phase: 4, summary: "strip fences and manifest; leave plain native files (no lock-in)" },
   mcp: { phase: 7, summary: "serve the CLI surface as an MCP server for in-session use by agents" },
 };
@@ -64,6 +61,8 @@ async function main(): Promise<number> {
       check: { type: "boolean" },
       verbose: { type: "boolean" },
       accept: { type: "boolean" },
+      refresh: { type: "boolean" },
+      write: { type: "boolean" },
       "write-back": { type: "boolean" },
       fix: { type: "boolean" },
       matrix: { type: "boolean" },
@@ -100,6 +99,14 @@ async function main(): Promise<number> {
 
   switch (cmd) {
     case "init": {
+      if (values.refresh) {
+        const result = await runRefresh({
+          cwd: values.cwd ?? process.cwd(),
+          ...(values.write ? { write: true } : {}),
+        });
+        console.log(values.json ? JSON.stringify(result, null, 2) : refreshSummary(result));
+        return result.changes.length && !result.written ? 3 : 0;
+      }
       const result = await runInit({
         cwd: values.cwd ?? process.cwd(),
         ...(values.yes ? { yes: true } : {}),
@@ -262,15 +269,20 @@ async function main(): Promise<number> {
         return 0;
       }
       if (sub === "show" && positionals[2]) {
-        if (!/^[a-z0-9][a-z0-9-]*$/.test(positionals[2])) {
-          console.error(`invalid profile name '${positionals[2]}' — use lowercase letters, digits, and hyphens`);
-          return 1;
-        }
-        const dir = fileURLToPath(new URL("../profiles", import.meta.url));
-        console.log(readFileSync(join(dir, `${positionals[2]}.yaml`), "utf8"));
+        console.log(readProfileSource(positionals[2], root));
         return 0;
       }
-      console.error("usage: aesop profile [list | show <name>]   (new/set land in Phase 4)");
+      if (sub === "new" && positionals[2]) {
+        const from = values.from ?? "balanced";
+        const path = createProfile(positionals[2], from, root);
+        console.log(
+          values.json
+            ? JSON.stringify({ name: positionals[2], from, path }, null, 2)
+            : `profile '${positionals[2]}' forked from '${from}' → ${path}\nTune it, set pathway.profile: ${positionals[2]} in aesop.yaml, then run \`aesop compile\`.`
+        );
+        return 0;
+      }
+      console.error("usage: aesop profile [list | show <name> | new <name> [--from <base>]]");
       return 1;
     }
     default:

@@ -1,11 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { cp, mkdtemp, readFile, rm } from "node:fs/promises";
+import { cp, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
-import { runInit } from "./commands/init.js";
+import { runInit, runRefresh } from "./commands/init.js";
 import { validateManifest, AesopError } from "./manifest.js";
 import type { Manifest } from "./types.js";
 
@@ -72,6 +72,56 @@ test("flags override defaults: --harness and --pathway", async () => {
   assert.equal(result.manifest.pathway.profile, "accuracy-max");
   const { valid } = validateManifest(result.manifest);
   assert.ok(valid);
+  await rm(dir, { recursive: true, force: true });
+});
+
+test("init --refresh: reports detection drift, applies it only with --write, spares human fields", async () => {
+  const { dir, manifest } = await initInTemp("node-app");
+
+  // Fresh init → no drift.
+  const clean = await runRefresh({ cwd: dir });
+  assert.deepEqual(clean.changes, [], "fresh init should have no detection drift");
+
+  // A stale manifest (test never set) plus human-owned edits; the project itself has moved on:
+  // package.json no longer carries build/lint scripts (absence must NOT remove manifest values).
+  const manifestPath = join(dir, "aesop.yaml");
+  const edited = {
+    ...manifest,
+    project: {
+      ...manifest.project,
+      commands: { ...manifest.project.commands, test: "TODO: set your test command" },
+      invariants: ["never break the public API"],
+      review_bandwidth: 1,
+    },
+  };
+  const { stringify } = await import("yaml");
+  await writeFile(manifestPath, stringify(edited), "utf8");
+  const pkgPath = join(dir, "package.json");
+  const pkg = JSON.parse(await readFile(pkgPath, "utf8"));
+  pkg.scripts = { test: "vitest run" };
+  await writeFile(pkgPath, JSON.stringify(pkg, null, 2), "utf8");
+
+  // Report-only: drift named, manifest untouched.
+  const drifted = await runRefresh({ cwd: dir });
+  assert.equal(drifted.written, false);
+  assert.deepEqual(
+    drifted.changes.map((c) => c.field),
+    ["project.commands.test"]
+  );
+  assert.equal(drifted.changes[0]!.detected, "npm test"); // package.json has a test script → npm test
+  const untouched = parse(await readFile(manifestPath, "utf8")) as Manifest;
+  assert.equal(untouched.project.commands.test, "TODO: set your test command");
+  const written = await runRefresh({ cwd: dir, write: true });
+  assert.equal(written.written, true);
+  const after = parse(await readFile(manifestPath, "utf8")) as Manifest;
+  assert.equal(after.project.commands.test, "npm test");
+  assert.equal(after.project.commands.build, "npm run build", "build must survive detection absence");
+  assert.equal(after.project.commands.lint, "npm run lint", "lint must survive detection absence");
+  assert.deepEqual(after.project.invariants, ["never break the public API"], "interviewed field clobbered");
+  assert.equal(after.project.review_bandwidth, 1, "interviewed field clobbered");
+  const { valid, errors } = validateManifest(after);
+  assert.ok(valid, errors.join("; "));
+
   await rm(dir, { recursive: true, force: true });
 });
 

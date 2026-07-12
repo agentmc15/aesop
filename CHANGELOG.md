@@ -4,6 +4,21 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **`aesop init --refresh`** — re-run detection against an existing manifest
+  and report drift in detected fields (commands, stack, monorepo); exit 3 on
+  unapplied drift, `--write` to apply. Interviewed fields are never touched,
+  and detection finding nothing never removes a manifest value.
+- **`aesop profile new <name> --from <base>`** — fork a pathway calibration
+  into `.aesop/profiles/<name>.yaml` (comment-preserving copy; refuses
+  overwrite). `aesop profile show` now resolves custom profiles too.
+- **Antigravity native skills** — skills now emit to
+  `.agents/skills/<name>/SKILL.md` (location pinned July 2026 in the harness
+  matrix) instead of the referenced-from-AGENTS.md fallback.
+
 ## [0.1.0] — 2026-06-12
 
 First release. An environment compiler for AI coding agents: one manifest

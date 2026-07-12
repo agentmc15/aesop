@@ -22,6 +22,8 @@ aesop init                          # interactive interview (TTY only)
 aesop init --yes                    # defaults, no questions
 aesop init --yes --harness claude-code,codex --pathway balanced
 aesop init --force                  # overwrite an existing aesop.yaml
+aesop init --refresh                # diff fresh detection against the manifest (exit 3 on drift)
+aesop init --refresh --write        # apply detected changes (detected fields only)
 ```
 
 | Flag | Effect |
@@ -30,6 +32,8 @@ aesop init --force                  # overwrite an existing aesop.yaml
 | `--harness a,b` | select harnesses (default: inferred from existing agent files, else `claude-code,codex`) |
 | `--pathway p` | starting profile (default `token-lean` — turn the dial up only where accuracy pays) |
 | `--force` | overwrite an existing `aesop.yaml` |
+| `--refresh` | re-run detection against an existing manifest and report drift in *detected* fields (commands, stack, monorepo); exit 3 when drift is found and not applied |
+| `--refresh --write` | apply the detected values to `aesop.yaml`. Interviewed fields (invariants, models, review bandwidth, harnesses, pathway) are never touched, and detection finding nothing never removes a manifest value |
 
 Detection: stack from lockfiles/manifests (node/ts, python, go, rust); build/test/lint commands
 with precedence *package.json scripts > Makefile targets > language defaults > CI workflow scan*;

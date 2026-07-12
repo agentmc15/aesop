@@ -5,7 +5,7 @@
  */
 import { parseArgs } from "node:util";
 import { AesopError } from "./manifest.js";
-import { runInit, initSummary } from "./commands/init.js";
+import { runInit, initSummary, runRefresh, refreshSummary } from "./commands/init.js";
 import { runCompile, compileSummary } from "./commands/compile.js";
 import { runSync, syncSummary } from "./commands/sync.js";
 import { runDoctor, doctorSummary } from "./commands/doctor.js";
@@ -19,7 +19,7 @@ import { serveMcp } from "./commands/mcp.js";
 import { createProfile, listProfiles, readProfileSource } from "./profile.js";
 
 const COMMANDS: Record<string, { phase: number; summary: string }> = {
-  init: { phase: 1, summary: "detect project → interview → write aesop.yaml (--yes, --force, --harness a,b, --pathway p)" },
+  init: { phase: 1, summary: "detect project → interview → write aesop.yaml (--yes, --force, --harness a,b, --pathway p); --refresh re-detects and diffs" },
   compile: { phase: 2, summary: "manifest → native files for every selected harness (--check for CI)" },
   sync: { phase: 4, summary: "detect drift in fenced regions; --write-back lifts edits into the manifest" },
   doctor: { phase: 4, summary: "audit the environment: verify loop, MCP health, stops, secrets, budgets" },
@@ -61,6 +61,8 @@ async function main(): Promise<number> {
       check: { type: "boolean" },
       verbose: { type: "boolean" },
       accept: { type: "boolean" },
+      refresh: { type: "boolean" },
+      write: { type: "boolean" },
       "write-back": { type: "boolean" },
       fix: { type: "boolean" },
       matrix: { type: "boolean" },
@@ -97,6 +99,14 @@ async function main(): Promise<number> {
 
   switch (cmd) {
     case "init": {
+      if (values.refresh) {
+        const result = await runRefresh({
+          cwd: values.cwd ?? process.cwd(),
+          ...(values.write ? { write: true } : {}),
+        });
+        console.log(values.json ? JSON.stringify(result, null, 2) : refreshSummary(result));
+        return result.changes.length && !result.written ? 3 : 0;
+      }
       const result = await runInit({
         cwd: values.cwd ?? process.cwd(),
         ...(values.yes ? { yes: true } : {}),

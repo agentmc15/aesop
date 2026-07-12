@@ -1,18 +1,23 @@
 /** Helpers shared by emitters. Fallback files are built here so that two harnesses emitting the
  *  same fallback produce identical bytes — the compile collision guard then dedupes them. */
-import { parseAgent, refName } from "../registry.js";
-import type { CompileContext, EmittedFile, McpServer } from "../types.js";
+import { parseAgent, refName, type AgentSpec } from "../registry.js";
+import type { CompileContext, EmittedFile, McpServer, ResolvedPrimitive } from "../types.js";
 
 export const slugify = (s: string): string =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "scope";
+
+/** Resolve an agent primitive to its spec, applying any manifest-level override (model, tools). */
+export function resolveAgentSpec(ctx: CompileContext, resolved: ResolvedPrimitive): AgentSpec {
+  const ref = (ctx.manifest.primitives.agents ?? []).find((r) => refName(r) === resolved.name);
+  return parseAgent(resolved, ref);
+}
 
 /** Harness-neutral role prompts for harnesses without first-class subagents. */
 export function rolePromptFiles(ctx: CompileContext): EmittedFile[] {
   return ctx.primitives
     .filter((p) => p.type === "agent")
     .map((resolved) => {
-      const ref = (ctx.manifest.primitives.agents ?? []).find((r) => refName(r) === resolved.name);
-      const spec = parseAgent(resolved, ref);
+      const spec = resolveAgentSpec(ctx, resolved);
       const content = [
         `# Role: ${spec.name}`,
         "",

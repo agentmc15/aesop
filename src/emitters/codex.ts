@@ -2,7 +2,7 @@
  *  by the compiler core (Codex reads it natively).
  *  Target formats: docs/03-harness-matrix.md (update the doc first, then this file). */
 import { goalCommand } from "./claude-code.js";
-import { parseAgent, refName } from "../registry.js";
+import { resolveAgentSpec } from "./shared.js";
 import type { CapabilityMatrix, CompileContext, EmittedFile, Emitter, Manifest } from "../types.js";
 
 const tomlString = (s: string): string => JSON.stringify(s); // TOML basic strings share JSON escaping
@@ -39,8 +39,7 @@ export const codexEmitter: Emitter = {
     const files: EmittedFile[] = [{ path: ".codex/config.toml", content: configToml(ctx), fence: "sidecar" }];
 
     for (const resolved of ctx.primitives.filter((p) => p.type === "agent")) {
-      const ref = (ctx.manifest.primitives.agents ?? []).find((r) => refName(r) === resolved.name);
-      const spec = parseAgent(resolved, ref);
+      const spec = resolveAgentSpec(ctx, resolved);
       const content = [
         `name = ${tomlString(spec.name)}`,
         `description = ${tomlString(spec.description)}`,

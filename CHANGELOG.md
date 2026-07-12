@@ -14,8 +14,9 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
-- CI now tests Node 20 and 22 across Linux, macOS, and Windows, gates on
-  `npm audit`, and reports test coverage; Dependabot watches npm and Actions.
+- CI now tests Node 20 and 22 across Linux, macOS, and Windows (the Windows
+  legs are non-gating pending #4), gates on `npm audit`, and reports test
+  coverage; Dependabot watches npm and Actions.
   Line-ending rewrites are disabled repo-wide (`.gitattributes`) so the
   byte-for-byte golden fixtures survive Windows checkouts.
 - A monthly workflow opens an issue when `docs/03-harness-matrix.md` passes

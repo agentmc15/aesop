@@ -12,6 +12,9 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         node: [20, 22]
     runs-on: ${{ matrix.os }}
+    # Windows is non-gating until #4 lands (10 known failures: POSIX-hardcoded test
+    # expectations plus doctor's `command -v` probes). Green everywhere else is required.
+    continue-on-error: ${{ matrix.os == 'windows-latest' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

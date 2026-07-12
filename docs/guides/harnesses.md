@@ -84,11 +84,11 @@ redundant `GEMINI.md` at all. The distinctive artifact:
 |---|---|
 | instructions | `AGENTS.md` (native) |
 | guardrails | `GUARDRAILS.md` — generated: safety non-negotiables, your permission tiers, your invariants, the three hard stops |
+| skills | `.agents/skills/<name>/SKILL.md` (native — pinned July 2026; legacy `.agent/skills/` is still read) |
 | loops | Manager surface + scheduled tasks (point them at the recipe text); `aesop goal run` works too |
 
 Fallbacks: roles via `.aesop/roles/` (run them from the Manager surface); MCP lives in app
-settings, not a repo file; skill location varies by version, so skills are referenced from
-`AGENTS.md` until the matrix pins the path.
+settings, not a repo file.
 
 ## VS Code (Copilot in the workspace)
 

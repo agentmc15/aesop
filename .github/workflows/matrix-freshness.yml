@@ -1,0 +1,55 @@
+# docs/03-harness-matrix.md pins each harness's file formats and says: re-verify every 90 days.
+# Harness churn is the roadmap's #1 tracked risk — this opens an issue when the window lapses,
+# so the matrix can't silently go stale.
+name: matrix-freshness
+on:
+  schedule:
+    - cron: "0 7 1 * *" # monthly on the 1st
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: age
+        run: |
+          verified=$(grep -oE 'Verified [A-Z][a-z]+ [0-9]{4}' docs/03-harness-matrix.md | head -1 | cut -d' ' -f2-)
+          if [ -z "$verified" ]; then
+            echo "no 'Verified <Month> <Year>' line found in docs/03-harness-matrix.md" >&2
+            exit 1
+          fi
+          days=$(( ( $(date +%s) - $(date -d "1 $verified" +%s) ) / 86400 ))
+          echo "verified=$verified" >> "$GITHUB_OUTPUT"
+          echo "days=$days" >> "$GITHUB_OUTPUT"
+          echo "matrix last verified: $verified ($days days ago)"
+      - if: fromJSON(steps.age.outputs.days) > 90
+        uses: actions/github-script@v7
+        env:
+          VERIFIED: ${{ steps.age.outputs.verified }}
+          DAYS: ${{ steps.age.outputs.days }}
+        with:
+          script: |
+            const { data: open } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: "open", labels: "matrix-freshness",
+            });
+            if (open.length) return; // one reminder at a time
+            await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo,
+              title: "Harness matrix re-verification due (docs/03-harness-matrix.md)",
+              labels: ["matrix-freshness"],
+              body: [
+                `\`docs/03-harness-matrix.md\` was last fully verified **${process.env.VERIFIED}** — ` +
+                  `${process.env.DAYS} days ago, past the doc's own 90-day window.`,
+                "",
+                "Re-verify each harness row against its current release (formats, locations, native",
+                "features), update any changed cells **doc-first**, then adjust the matching emitter and",
+                "`src/capabilities.test.ts` (the doc and code are tested cell-for-cell). Finish by bumping",
+                "the `Verified <Month> <Year>` line in the doc header.",
+              ].join("\n"),
+            });

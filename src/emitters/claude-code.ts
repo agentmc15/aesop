@@ -1,8 +1,9 @@
 /** Claude Code emitter — CLAUDE.md (@AGENTS.md), .claude/{agents,commands,skills,settings.json}, .mcp.json.
  *  Target formats: docs/03-harness-matrix.md (update the doc first, then this file). */
 import { stringify } from "yaml";
-import { parseAgent, parseHook, refName } from "../registry.js";
+import { parseHook } from "../registry.js";
 import { wrapInlineFence } from "../render.js";
+import { resolveAgentSpec } from "./shared.js";
 import type { CapabilityMatrix, CompileContext, EmittedFile, Emitter, GoalRecipe, Manifest } from "../types.js";
 
 export function goalCommand(recipe: GoalRecipe): string {
@@ -93,8 +94,7 @@ export const claudeCodeEmitter: Emitter = {
     });
 
     for (const resolved of ctx.primitives.filter((p) => p.type === "agent")) {
-      const ref = (ctx.manifest.primitives.agents ?? []).find((r) => refName(r) === resolved.name);
-      const spec = parseAgent(resolved, ref);
+      const spec = resolveAgentSpec(ctx, resolved);
       const tools = [...new Set(spec.tools.flatMap((t) => TOOL_MAP[t]?.split(", ") ?? []))];
       // YAML-serialize, never interpolate: a registry-controlled description with a newline must
       // not be able to inject extra frontmatter keys (F4).

@@ -10,7 +10,7 @@
   "repository": { "type": "git", "url": "git+https://github.com/agentmc15/aesop.git" },
   "scripts": {
     "build": "tsc",
-    "test": "npm run build && node --test dist/*.test.js",
+    "test": "npm run build && cd dist && node --test",
     "lint": "tsc --noEmit",
     "dev": "tsx src/index.ts",
     "prepare": "npm run build",

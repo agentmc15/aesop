@@ -2,9 +2,8 @@
  *  instructions/*.instructions.md (applyTo), prompts/*.prompt.md, agents/*.agent.md, skills/}, .vscode/mcp.json.
  *  Target formats: docs/03-harness-matrix.md (update the doc first, then this file). */
 import { stringify } from "yaml";
-import { parseAgent, refName } from "../registry.js";
 import { renderAgentsMd } from "../render.js";
-import { slugify, vscodeMcpJson } from "./shared.js";
+import { resolveAgentSpec, slugify, vscodeMcpJson } from "./shared.js";
 import type { CapabilityMatrix, CompileContext, EmittedFile, Emitter, Manifest } from "../types.js";
 
 export const copilotEmitter: Emitter = {
@@ -41,8 +40,7 @@ export const copilotEmitter: Emitter = {
     }
 
     for (const resolved of ctx.primitives.filter((p) => p.type === "agent")) {
-      const ref = (ctx.manifest.primitives.agents ?? []).find((r) => refName(r) === resolved.name);
-      const spec = parseAgent(resolved, ref);
+      const spec = resolveAgentSpec(ctx, resolved);
       const readOnly = spec.edits ? "" : "\nYou are read-only: never edit, write, or execute mutating commands.\n";
       const fm = `---\n${stringify({ name: spec.name, description: spec.description }, { lineWidth: 0 }).trimEnd()}\n---`;
       files.push({

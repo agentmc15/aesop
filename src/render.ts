@@ -1,4 +1,5 @@
 /** Shared rendering: the canonical AGENTS.md, goal recipes, and fence handling for managed files. */
+import { AesopError } from "./manifest.js";
 import { sha256 } from "./registry.js";
 import type { CompileContext, GoalRecipe, Manifest, Profile } from "./types.js";
 
@@ -65,7 +66,7 @@ export function renderProjectBlock(manifest: Manifest, profile: Profile): string
 
 export function renderAgentsMd(ctx: CompileContext, opts?: { excludePathBlocks?: boolean }): string {
   const template = ctx.primitives.find((p) => p.type === "instructions");
-  if (!template) throw new Error("instructions template missing from resolved primitives");
+  if (!template) throw new AesopError(2, "instructions template missing from resolved primitives (this is a bug in aesop)");
   const body = Object.values(template.files)[0]!;
 
   const blocks = ctx.manifest.primitives.instructions?.blocks ?? [];

@@ -1,43 +1,35 @@
-# Ship the three documented-but-unshipped features (2026-07-12)
+# Slice 2: quick wins + robustness (2026-07-12)
 
-From tasks/improvement-recommendations.md §3 — each was promised in docs as "future work".
-No changes to the locked src/types.ts or schemas/aesop.schema.json.
+From tasks/improvement-recommendations.md §1–2. Deferred by choice: release automation
+(needs an NPM_TOKEN decision from the human) and the seventh emitter (post-1.0 tier).
 
-## 1. `aesop profile new <name> --from <base>`  (docs/06-cli-spec.md:166)
-- [x] profile.ts: createProfile() — validate name (F7 regex), textual copy of base profile
-      (preserves comments), rewrite the `profile:` line, refuse overwrite, write to
-      .aesop/profiles/<name>.yaml → verify: profile.test.ts (create, list, load, overwrite
-      refusal, traversal rejection, unknown base)
-- [x] profile.ts: readProfileSource() so `profile show` resolves custom profiles too
-- [x] index.ts dispatch + usage; docs/06-cli-spec.md → verify: manual CLI run
+## Code fixes
+- [x] render.ts:68 bare Error → AesopError → verify: render.test.ts pins the message
+- [x] resolveAgentSpec() helper in emitters/shared.ts; use in claude-code, codex,
+      copilot, rolePromptFiles → verify: full suite green, goldens unchanged
 
-## 2. `aesop init --refresh [--write]`  (docs/07-manifest-schema.md:77)
-- [x] init.ts: runRefresh() — loadManifest + detect(), diff detected-only fields
-      (stack, commands.test/build/lint, monorepo); never touch interviewed fields
-      (invariants, models, review_bandwidth, harnesses, pathway); detection absence is not
-      evidence of removal (report only when a detected value exists and differs)
-- [x] --write applies + validates + serializeManifest (same pattern as sync --write-back)
-- [x] index.ts: exit 3 on unapplied drift (mirrors compile --check / sync)
-      → verify: init.test.ts (drift detected, --write applies, interviewed fields intact,
-      clean repo → no drift)
-- [x] docs/06 + docs/07 notes updated
+## Tests
+- [x] render.test.ts — fence contract unit tests: wrapInlineFence hash, fenceDrift
+      (clean / tampered / no fence), mergeWithExisting (no file, fence replace with
+      content above AND below preserved, unmanaged file → marker, empty file)
+      → verify: npm test
 
-## 3. Antigravity native skills  (docs/03-harness-matrix.md:33)
-- [x] Pin verified location in docs/03 FIRST (doc, then code): workspace
-      `.agents/skills/<name>/SKILL.md`; legacy `.agent/skills/` still read; global
-      `~/.gemini/config/skills/` (sources: Google codelab, atamel.dev 2026-07-01,
-      antigravity.google/docs/skills)
-- [x] antigravity.ts: emit skills to .agents/skills/; capabilities(): skill → native
-- [x] capabilities.test.ts MATRIX row updated (cell-for-cell with doc)
-- [x] regenerate fixtures/compile/full/expected deliberately; read the diff
-      → verify: compile golden test green
-- [x] recompile self (dogfood) so CI compile --check stays green
+## Dependencies & CI
+- [x] npm audit fix (esbuild dev-dep, GHSA-g7r4-m6w7-qqqr) → verify: audit clean, tests green
+- [x] .github/dependabot.yml (npm + github-actions, weekly)
+- [x] CI matrix: node 20/22 × ubuntu/macos/windows; doctor stays ubuntu-only (posix
+      `command -v` checks); audit + coverage steps on one leg → verify: CI green on PR;
+      iterate on any windows/macos failure rather than dropping the leg silently
+- [x] .gitattributes `* -text` so goldens survive Windows checkout byte-for-byte
+
+## Docs & contribution scaffolding
+- [x] registry/commands/README.md + registry/hooks/README.md (parallel to agents/skills)
+- [x] CONTRIBUTING.md — distill the load-bearing rules: locked types/schema, doc-first
+      matrix, deliberate golden regeneration, no AI trailers, phase workflow
+- [x] .github/ISSUE_TEMPLATE/{bug_report,feature_request}.md + pull_request_template.md
+- [x] .github/workflows/matrix-freshness.yml — monthly cron + dispatch; opens an issue
+      when docs/03's verified date exceeds 90 days
+- [x] CHANGELOG Unreleased additions
 
 ## Wrap-up
-- [x] CHANGELOG Unreleased section
-- [x] npm test + lint + self compile --check + doctor all green
-
----
-
-# Archive: security remediation ✅ (2026-06-11) — see docs/security/audit-2026-06-10.md;
-# all 8 findings fixed + pinned by src/security.test.ts (details in git history of this file).
+- [x] npm test + lint + self compile --check + doctor green; push; PR; CI green; merge

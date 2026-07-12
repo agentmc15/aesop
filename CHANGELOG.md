@@ -6,6 +6,24 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Internal missing-template invariant now fails through the typed `AesopError`
+  path instead of a raw stack trace.
+- `npm audit` clean (esbuild dev-dependency advisory GHSA-g7r4-m6w7-qqqr).
+
+### Changed
+
+- CI now tests Node 20 and 22 across Linux, macOS, and Windows (the Windows
+  legs are non-gating pending #4), gates on `npm audit`, and reports test
+  coverage; Dependabot watches npm and Actions.
+  Line-ending rewrites are disabled repo-wide (`.gitattributes`) so the
+  byte-for-byte golden fixtures survive Windows checkouts.
+- A monthly workflow opens an issue when `docs/03-harness-matrix.md` passes
+  its own 90-day re-verification window.
+- Contribution scaffolding: CONTRIBUTING.md (the load-bearing rules), issue
+  and PR templates, READMEs for `registry/commands/` and `registry/hooks/`.
+
 ### Added
 
 - **`aesop init --refresh`** — re-run detection against an existing manifest

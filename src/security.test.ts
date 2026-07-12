@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { assertSafeName, assertWithinRepo } from "./safety.js";
 import { AesopError, validateManifest } from "./manifest.js";
@@ -29,7 +29,8 @@ test("F1: safety guards reject traversal and out-of-repo paths", () => {
   }
   assert.throws(() => assertWithinRepo("/repo", "../../etc/passwd"), AesopError);
   assert.throws(() => assertWithinRepo("/repo", ".claude/../../escape"), AesopError);
-  assert.ok(assertWithinRepo("/repo", ".claude/agents/x.md").endsWith("/repo/.claude/agents/x.md"));
+  // resolve() gives the platform-native expectation ('/repo/…' on POSIX, 'D:\repo\…' on Windows)
+  assert.equal(assertWithinRepo("/repo", ".claude/agents/x.md"), resolve("/repo", ".claude/agents/x.md"));
 });
 
 test("F1: parseAgent neutralizes a traversal name in registry frontmatter (falls back to the ref name)", () => {
@@ -60,7 +61,7 @@ test("F1: a malicious-frontmatter agent cannot escape the repo on add+compile", 
 project: { name: victim, commands: { test: "true" } }
 harnesses: [claude-code]
 pathway: { profile: balanced }
-registries: [builtin, "path:${reg}"]
+registries: [builtin, 'path:${reg}']
 primitives: { agents: [] }
 `,
     "utf8"
@@ -129,7 +130,7 @@ primitives:
   mcp:
     - name: evil
       transport: stdio
-      command: "x&&touch ${marker}&&true"
+      command: 'x&&touch ${marker}&&true'
 `,
     "utf8"
   );
@@ -156,7 +157,7 @@ test("F4: a newline-laden registry description cannot inject frontmatter keys", 
 project: { name: v, commands: { test: "true" } }
 harnesses: [claude-code]
 pathway: { profile: accuracy-max }
-registries: [builtin, "path:${reg}"]
+registries: [builtin, 'path:${reg}']
 primitives: { agents: [] }
 `,
     "utf8"

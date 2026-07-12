@@ -8,6 +8,11 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- **Windows support** (#4): registry short names now derive correctly from
+  Windows `path:` sources (both in federation and the F6 collision rule), and
+  `doctor`'s exec probes are platform-aware (`where` on win32, `command -v`
+  elsewhere — still argv-only, no shell interpolation). The full test suite is
+  green on windows-latest and the CI Windows legs now gate merges.
 - Internal missing-template invariant now fails through the typed `AesopError`
   path instead of a raw stack trace.
 - `npm audit` clean (esbuild dev-dependency advisory GHSA-g7r4-m6w7-qqqr).

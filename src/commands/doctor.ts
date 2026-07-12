@@ -98,7 +98,9 @@ export async function runDoctor(opts: DoctorOptions): Promise<DoctorResult> {
     result.findings.push({ code: "verify-loop", message: `test command is unset ('${testCmd ?? ""}') — the agent cannot prove its work`, at: "aesop.yaml" });
   } else if (!opts.noExec) {
     try {
-      await exec("sh", ["-c", testCmd], { cwd: opts.cwd, timeout: 120_000 });
+      // shell:true runs the manifest's own command via sh -c / cmd.exe — the same trust the
+      // project owner already extends to it; nothing foreign is interpolated (F3).
+      await exec(testCmd, { cwd: opts.cwd, timeout: 120_000, shell: true });
     } catch {
       result.findings.push({ code: "verify-loop", message: `test command failed: \`${testCmd}\` — fix it before trusting any loop`, at: "aesop.yaml" });
     }
@@ -110,8 +112,13 @@ export async function runDoctor(opts: DoctorOptions): Promise<DoctorResult> {
       if (server.transport !== "stdio" || !server.command) continue;
       const bin = server.command.split(" ")[0]!;
       try {
-        // bin is passed as $1, never interpolated into the script — no shell injection (F3).
-        await exec("sh", ["-c", 'command -v "$1"', "sh", bin], { cwd: opts.cwd, timeout: 10_000 });
+        // bin is passed as an argv entry, never interpolated into a script — no shell
+        // injection (F3). POSIX resolves via `command -v "$1"`, Windows via `where <bin>`.
+        if (process.platform === "win32") {
+          await exec("where", [bin], { cwd: opts.cwd, timeout: 10_000 });
+        } else {
+          await exec("sh", ["-c", 'command -v "$1"', "sh", bin], { cwd: opts.cwd, timeout: 10_000 });
+        }
       } catch {
         result.findings.push({ code: "mcp-dead", message: `MCP server '${server.name}': command '${bin}' not found on PATH`, at: "aesop.yaml" });
       }

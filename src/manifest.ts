@@ -44,8 +44,9 @@ export function validateManifest(data: unknown): ValidationResult {
     errors.push("/project/models judge.family must differ from primary.family (the maker must not grade its own work)");
   }
   // Two registries that resolve to the same short name share one .aesop/vendor + cache dir (F6).
+  // Split on both separators so Windows `path:` registries collide (and validate) correctly too.
   const shortNames = (m?.registries ?? []).map((r) =>
-    r === "builtin" ? "builtin" : ((r.replace(/\/+$/, "").split("/").pop() ?? r).replace(/\.git$/, ""))
+    r === "builtin" ? "builtin" : ((r.replace(/[\\/]+$/, "").split(/[\\/]/).pop() ?? r).replace(/\.git$/, ""))
   );
   const dups = [...new Set(shortNames.filter((n, i) => shortNames.indexOf(n) !== i))];
   if (dups.length) {

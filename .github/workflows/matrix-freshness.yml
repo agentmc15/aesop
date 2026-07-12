@@ -15,7 +15,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - id: age
         run: |
           verified=$(grep -oE 'Verified [A-Z][a-z]+ [0-9]{4}' docs/03-harness-matrix.md | head -1 | cut -d' ' -f2-)

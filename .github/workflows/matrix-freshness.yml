@@ -28,7 +28,7 @@ jobs:
           echo "days=$days" >> "$GITHUB_OUTPUT"
           echo "matrix last verified: $verified ($days days ago)"
       - if: fromJSON(steps.age.outputs.days) > 90
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           VERIFIED: ${{ steps.age.outputs.verified }}
           DAYS: ${{ steps.age.outputs.days }}

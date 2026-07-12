@@ -158,12 +158,15 @@ aesop bundle --format tarball                 # tar.gz of every managed file
 
 ```bash
 aesop profile list                # builtin: accuracy-max, balanced, token-lean (+ custom)
-aesop profile show balanced
+aesop profile show balanced       # custom profiles resolve too (they win over builtins)
+aesop profile new team-default --from balanced   # fork a calibration (default base: balanced)
 ```
 
-Custom profiles: drop a YAML file at `.aesop/profiles/<name>.yaml` (same shape as
-`profiles/*.yaml`); it takes precedence over a builtin of the same name and can be referenced
-from `pathway.profile`. (A `profile new` scaffold command is future work.)
+`profile new` writes `.aesop/profiles/<name>.yaml` as a comment-preserving copy of the base
+(only the `profile:` line is rewritten) and refuses to overwrite an existing custom profile.
+Custom profiles take precedence over a builtin of the same name and are referenced from
+`pathway.profile`. You can also drop a YAML file at `.aesop/profiles/<name>.yaml` by hand
+(same shape as `profiles/*.yaml`).
 
 ## `aesop eject`
 

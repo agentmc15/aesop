@@ -1,24 +1,43 @@
-# Security remediation ✅ (2026-06-11)
+# Ship the three documented-but-unshipped features (2026-07-12)
 
-Full audit: docs/security/audit-2026-06-10.md. All 8 findings fixed + pinned by tests.
+From tasks/improvement-recommendations.md §3 — each was promised in docs as "future work".
+No changes to the locked src/types.ts or schemas/aesop.schema.json.
 
-## Shipped
-- [x] src/safety.ts — isSafeName / assertSafeName / safeNameOr / assertWithinRepo
-- [x] F1 path-traversal write: safeNameOr in parseAgent + federation normalizeAgent;
-      assertSafeName on add-time names; assertWithinRepo backstop on every emitted path
-      (computeOutputs); schema name patterns on primitiveRef/agentRef/goalRecipe
-- [x] F2 MCP RCE: removed `agent` param from the goal_run tool
-- [x] F3 doctor: command -v passes bin as $1 (no shell interpolation); added `doctor --no-exec`
-- [x] F4 frontmatter injection: yaml.stringify({lineWidth:0}) for claude-code + copilot
-- [x] F5 unvalidated loads: single loadManifest() (validates) used by add/goal/update
-- [x] F6 git hygiene: clone with `--`; cache origin verified before pull; dup registry
-      short-names rejected in validateManifest
-- [x] F7 profile traversal: name validation in profile.ts + `aesop profile show`
-- [x] F8 env passthrough: documented at the exec site (mitigated by F2)
-- [x] 10 regression tests (src/security.test.ts); 54 total green; lint clean
-- [x] dogfood: self compile --check clean, doctor green (incl. --no-exec)
-- [x] only output change across all goldens: applyTo now library-serialized (1 line)
+## 1. `aesop profile new <name> --from <base>`  (docs/06-cli-spec.md:166)
+- [ ] profile.ts: createProfile() — validate name (F7 regex), textual copy of base profile
+      (preserves comments), rewrite the `profile:` line, refuse overwrite, write to
+      .aesop/profiles/<name>.yaml → verify: profile.test.ts (create, list, load, overwrite
+      refusal, traversal rejection, unknown base)
+- [ ] profile.ts: readProfileSource() so `profile show` resolves custom profiles too
+- [ ] index.ts dispatch + usage; docs/06-cli-spec.md → verify: manual CLI run
 
-## Note
-- Schema gained name `pattern`s — security-motivated tightening of the locked v1 schema; all
-  real/seed/fixture names already conform (lowercase-kebab).
+## 2. `aesop init --refresh [--write]`  (docs/07-manifest-schema.md:77)
+- [ ] init.ts: runRefresh() — loadManifest + detect(), diff detected-only fields
+      (stack, commands.test/build/lint, monorepo); never touch interviewed fields
+      (invariants, models, review_bandwidth, harnesses, pathway); detection absence is not
+      evidence of removal (report only when a detected value exists and differs)
+- [ ] --write applies + validates + serializeManifest (same pattern as sync --write-back)
+- [ ] index.ts: exit 3 on unapplied drift (mirrors compile --check / sync)
+      → verify: init.test.ts (drift detected, --write applies, interviewed fields intact,
+      clean repo → no drift)
+- [ ] docs/06 + docs/07 notes updated
+
+## 3. Antigravity native skills  (docs/03-harness-matrix.md:33)
+- [ ] Pin verified location in docs/03 FIRST (doc, then code): workspace
+      `.agents/skills/<name>/SKILL.md`; legacy `.agent/skills/` still read; global
+      `~/.gemini/config/skills/` (sources: Google codelab, atamel.dev 2026-07-01,
+      antigravity.google/docs/skills)
+- [ ] antigravity.ts: emit skills to .agents/skills/; capabilities(): skill → native
+- [ ] capabilities.test.ts MATRIX row updated (cell-for-cell with doc)
+- [ ] regenerate fixtures/compile/full/expected deliberately; read the diff
+      → verify: compile golden test green
+- [ ] recompile self (dogfood) so CI compile --check stays green
+
+## Wrap-up
+- [ ] CHANGELOG Unreleased section
+- [ ] npm test + lint + self compile --check + doctor all green
+
+---
+
+# Archive: security remediation ✅ (2026-06-11) — see docs/security/audit-2026-06-10.md;
+# all 8 findings fixed + pinned by src/security.test.ts (details in git history of this file).

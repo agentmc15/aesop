@@ -1,11 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { cp, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { runCompile } from "./commands/compile.js";
-import { runSync } from "./commands/sync.js";
+import { buildIsStale, runSync } from "./commands/sync.js";
 import { runEject } from "./commands/eject.js";
 import { runLessons } from "./commands/lessons.js";
 
@@ -121,5 +121,44 @@ test("eject strips fences, keeps content, removes manifest and lock", async () =
   assert.ok(agents.includes("## Operating model"), "content lost on eject");
   await assert.rejects(() => readFile(join(dir, "aesop.yaml"), "utf8"));
   await assert.rejects(() => readFile(join(dir, ".aesop", "lock.json"), "utf8"));
+  await rm(dir, { recursive: true, force: true });
+});
+
+test("stale build: src/ newer than dist/ is detected; a fresh build is not", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "aesop-stale-"));
+  await mkdir(join(dir, "src"), { recursive: true });
+  await mkdir(join(dir, "dist"), { recursive: true });
+
+  // fresh: dist written after src
+  await writeFile(join(dir, "src", "a.ts"), "export const a = 1;\n", "utf8");
+  await writeFile(join(dir, "dist", "a.js"), "export const a = 1;\n", "utf8");
+  assert.equal(await buildIsStale(dir), false, "dist newer than src must not be stale");
+
+  // stale: src touched after dist
+  await new Promise((r) => setTimeout(r, 12)); // mtime granularity
+  await writeFile(join(dir, "src", "a.ts"), "export const a = 2;\n", "utf8");
+  assert.equal(await buildIsStale(dir), true, "src newer than dist must be stale");
+
+  // nested source counts too — the file that went stale may not be at the top level
+  await rm(join(dir, "dist"), { recursive: true, force: true });
+  await mkdir(join(dir, "dist"), { recursive: true });
+  await writeFile(join(dir, "dist", "a.js"), "export const a = 2;\n", "utf8");
+  assert.equal(await buildIsStale(dir), false);
+  await new Promise((r) => setTimeout(r, 12));
+  await mkdir(join(dir, "src", "commands"), { recursive: true });
+  await writeFile(join(dir, "src", "commands", "b.ts"), "export const b = 1;\n", "utf8");
+  assert.equal(await buildIsStale(dir), true, "nested src file must count");
+
+  await rm(dir, { recursive: true, force: true });
+});
+
+test("stale build: undefined when either tree is absent (installed package ships dist only)", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "aesop-stale-"));
+  assert.equal(await buildIsStale(dir), undefined, "no src and no dist → nothing to compare");
+
+  await mkdir(join(dir, "dist"), { recursive: true });
+  await writeFile(join(dir, "dist", "a.js"), "x\n", "utf8");
+  assert.equal(await buildIsStale(dir), undefined, "dist without src → not stale, not an error");
+
   await rm(dir, { recursive: true, force: true });
 });

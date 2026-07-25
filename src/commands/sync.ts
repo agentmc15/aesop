@@ -2,8 +2,9 @@
  *  --accept regenerates; --write-back lifts in-fence AGENTS.md edits into the manifest
  *  (Boris's mistake→rule loop, mechanized). Outside-fence edits are NOT drift — preservation
  *  is the contract. */
-import { readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { readdir, readFile, stat, writeFile } from "node:fs/promises";
+import { join, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import { computeOutputs, runCompile } from "./compile.js";
 import { serializeManifest, validateManifest, AesopError } from "../manifest.js";
@@ -42,9 +43,56 @@ function firstDiffLine(expected: string, actual: string): number {
 const fenceInner = (content: string): string | undefined =>
   content.match(/<!-- aesop:begin v1 sha256:[0-9a-f]{64} -->\n([\s\S]*?)<!-- aesop:end -->/)?.[1];
 
+/** Newest mtime (ms) of files with `ext` under `dir`, recursively; 0 if absent or empty. */
+async function newestMtime(dir: string, ext: string): Promise<number> {
+  let entries;
+  try {
+    entries = await readdir(dir, { withFileTypes: true });
+  } catch {
+    return 0;
+  }
+  let newest = 0;
+  for (const entry of entries) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) newest = Math.max(newest, await newestMtime(path, ext));
+    else if (entry.name.endsWith(ext)) {
+      try {
+        newest = Math.max(newest, (await stat(path)).mtimeMs);
+      } catch {
+        /* raced with a delete — ignore */
+      }
+    }
+  }
+  return newest;
+}
+
+/** True when `root/src/**\/*.ts` is newer than `root/dist/**\/*.js`; undefined when either tree
+ *  is absent (an installed package ships dist only, so there is nothing to be stale against). */
+export async function buildIsStale(root: string): Promise<boolean | undefined> {
+  const src = await newestMtime(join(root, "src"), ".ts");
+  const dist = await newestMtime(join(root, "dist"), ".js");
+  if (!src || !dist) return undefined;
+  return src > dist;
+}
+
+/** Repo root of the RUNNING cli, derived from this module's own path — never from cwd, so a
+ *  user project that happens to have src/ and dist/ is not mistaken for a stale aesop build. */
+function runningBuildRoot(): string | undefined {
+  const self = fileURLToPath(import.meta.url);
+  const marker = `${sep}dist${sep}`;
+  const at = self.lastIndexOf(marker);
+  return at === -1 ? undefined : self.slice(0, at);
+}
+
 export async function runSync(opts: SyncOptions): Promise<SyncResult> {
   const computed = await computeOutputs({ cwd: opts.cwd });
   const result: SyncResult = { drift: [], liftedLines: [], notes: [] };
+
+  // sync compares disk against what THIS binary believes the manifest produces. If the binary is
+  // older than its source, that belief is stale and the verdict — drift or clean — is unreliable.
+  const buildRoot = runningBuildRoot();
+  if (buildRoot && (await buildIsStale(buildRoot)))
+    result.notes.push("dist/ is older than src/ — this ran a stale compiler; `npm run build`, then re-run sync (the verdict above may be wrong)");
 
   for (const [path, { content: expected, fence }] of computed.outputs) {
     let actual: string;

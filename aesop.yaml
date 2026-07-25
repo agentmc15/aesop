@@ -47,8 +47,10 @@ primitives:
       - scope: project
         content: |
           ## Working in this repo
-          - Read `PLAN.md` first, then `docs/01–08`. The build is phase-gated
-            (`docs/08-roadmap.md`): one reviewable change per phase, gated by its Goal line.
+          - The build is phase-gated (`docs/08-roadmap.md`): one reviewable change per phase,
+            gated by its Goal line. Check the roadmap for current status, then read only the
+            `docs/` chapter your change actually touches. `PLAN.md` is the original build plan —
+            historical reference, not session-start reading.
           - The golden fixtures under `fixtures/compile/*/expected/` are the compiler's contract —
             regenerate them deliberately, never by reflex, and read the diff.
   skills:

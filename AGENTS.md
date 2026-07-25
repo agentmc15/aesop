@@ -1,4 +1,4 @@
-<!-- aesop:begin v1 sha256:a9e8e57402a338710a56fb27f6d7e124e873c4a2eccec9f923f2545d42476beb -->
+<!-- aesop:begin v1 sha256:99b254ed0b3b19cffa58e34079501a55a5e229d92fc4f0d637c72c8f247feb8b -->
 # AGENTS.md — agent instructions
 
 Everything above the `## Project` block is portable doctrine; the `## Project` block holds this
@@ -158,8 +158,10 @@ feedback is a machine for generating confident mistakes.
 ---
 
 ## Working in this repo
-- Read `PLAN.md` first, then `docs/01–08`. The build is phase-gated
-  (`docs/08-roadmap.md`): one reviewable change per phase, gated by its Goal line.
+- The build is phase-gated (`docs/08-roadmap.md`): one reviewable change per phase,
+  gated by its Goal line. Check the roadmap for current status, then read only the
+  `docs/` chapter your change actually touches. `PLAN.md` is the original build plan —
+  historical reference, not session-start reading.
 - The golden fixtures under `fixtures/compile/*/expected/` are the compiler's contract —
   regenerate them deliberately, never by reflex, and read the diff.
 

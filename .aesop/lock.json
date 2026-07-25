@@ -81,7 +81,7 @@
     ".cursor/rules/skill-verify-loop.mdc": "fe4d56cd6bfad2978cf23f9f99b64950a271508f4323e4d8a707f1eb0232b028",
     ".github/agents/explorer.agent.md": "5e9ec7d92c278da81346cb4cce1863664acf4c464d627c95d59782a522070bf5",
     ".github/agents/verify-app.agent.md": "20c50475759d12ce46c826302c6fd0922c0d89f41979063e72a44126319bea35",
-    ".github/copilot-instructions.md": "a9e8e57402a338710a56fb27f6d7e124e873c4a2eccec9f923f2545d42476beb",
+    ".github/copilot-instructions.md": "99b254ed0b3b19cffa58e34079501a55a5e229d92fc4f0d637c72c8f247feb8b",
     ".github/prompts/add-learning.prompt.md": "8f11c79b10325e55098b2a64a4b4cd030ac56202dbeadb9ff23d9def9e0382be",
     ".github/prompts/commit-pr.prompt.md": "9cc2055c66f16c9ff0a5db6888b3b0ca18beb0679c13f0953fec8f6fbb235ec3",
     ".github/prompts/fix-ci.prompt.md": "04c419b8a91d41f813387af109f32b7666d0b004aef3cb4a4dcff732bbaab54f",
@@ -90,7 +90,7 @@
     ".github/skills/verify-loop/SKILL.md": "06560b07d54529c70d71de36a9091e98ad455ae61faf43a1fc1c3d7a22da6167",
     ".vscode/settings.json": "84c94a9ddc771761ae724e9a77d169e434225291041e49f7bd05897047a4f593",
     ".vscode/tasks.json": "c354628a3d279e22063d2309c0d422b2149c2c5acaa78384f7ac2ecfa016bf82",
-    "AGENTS.md": "7c666c21412679c7d3afdd32c84b54f0c95e14da35ecdcdda3407e88be89c404",
+    "AGENTS.md": "de37fcc40040dc3685de99486c4467762838beafb433596e88d9585a22fc8c17",
     "CLAUDE.md": "a8d98a871f17684f174edeb6310030dd959f824d380cf566b8b4bb5a57a898c2",
     "GUARDRAILS.md": "862a3a888bae259c6a8b7a5e397ebf7662a3c9a6a7990caafebc2eb5bdb1b13f"
   }

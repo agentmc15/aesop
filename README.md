@@ -7,6 +7,8 @@ GitHub Copilot (CLI + VS Code), Cursor, Antigravity, VS Code.
 
 > Aesop tells your project's story to every agent, in each agent's native tongue.
 
+**Companion:** [polytropos](https://github.com/agentmc15/polytropos) — per-task model routing, cost estimation, and the outcome-ledger evidence loop for the same harnesses. *Aesop tells the fables; polytropos finds the way.*
+
 ```bash
 npm install -g github:agentmc15/aesop   # (after the npm publish: `npm i -g @agentmc15/aesop`)
 

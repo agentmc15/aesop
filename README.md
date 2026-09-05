@@ -1,5 +1,20 @@
 # Aesop
 
+> **Status (2026-09-05): archived — no longer developed.**
+>
+> Aesop's durable idea — the nine converged primitives and the per-harness support matrix — was
+> folded into [polytropos](https://github.com/agentmc15/polytropos), where it now lives as data
+> plus a read-only validator rather than a compiler. Start there:
+> [`docs/PRIMITIVES.md`](https://github.com/agentmc15/polytropos/blob/main/docs/PRIMITIVES.md).
+>
+> What was **not** carried over: the six emitters and the compiler itself — `init`, `compile`,
+> `sync`, `doctor`, federation, `bundle`, `eject`. Those stay here, and this repository stays
+> readable as the reference for them. The emitters' `capabilities()` bodies remain the best
+> single description of what each harness supports natively and what needs a fallback; polytropos
+> transcribes them verbatim, pinned to this repo's final commit.
+>
+> Nothing below this line was changed at archival — it describes Aesop as it stood.
+
 **An environment compiler for AI coding agents.** Connect Aesop to any project and get the exact
 agentic environment you want — instruction files, skills, subagents, commands, MCP servers, hooks,
 permissions, loops, and goals — compiled natively for **any harness**: Claude Code, Codex CLI,
